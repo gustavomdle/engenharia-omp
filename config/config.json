@@ -1,0 +1,46 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "dips-novo-item-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/dipsNovoItem/DipsNovoItemWebPart.js",
+          "manifest": "./src/webparts/dipsNovoItem/DipsNovoItemWebPart.manifest.json"
+        }
+      ]
+    },
+    "omp-novo-item-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/ompNovoItem/OmpNovoItemWebPart.js",
+          "manifest": "./src/webparts/ompNovoItem/OmpNovoItemWebPart.manifest.json"
+        }
+      ]
+    },
+    "omp-listar-todas-por-status-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/ompListarTodasPorStatus/OmpListarTodasPorStatusWebPart.js",
+          "manifest": "./src/webparts/ompListarTodasPorStatus/OmpListarTodasPorStatusWebPart.manifest.json"
+        }
+      ]
+    },
+    "omp-detalhes-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/ompDetalhes/OmpDetalhesWebPart.js",
+          "manifest": "./src/webparts/ompDetalhes/OmpDetalhesWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
+    "DipsNovoItemWebPartStrings": "lib/webparts/dipsNovoItem/loc/{locale}.js",
+    "OmpNovoItemWebPartStrings": "lib/webparts/ompNovoItem/loc/{locale}.js",
+    "OmpListarTodasPorStatusWebPartStrings": "lib/webparts/ompListarTodasPorStatus/loc/{locale}.js",
+    "OmpDetalhesWebPartStrings": "lib/webparts/ompDetalhes/loc/{locale}.js"
+  }
+}

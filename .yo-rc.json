@@ -1,0 +1,13 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": false,
+    "environment": "spo",
+    "version": "1.13.0",
+    "libraryName": "engenharia-omp-diebold",
+    "libraryId": "5ccf88c6-2ff6-4a33-b260-39dfbd8e8627",
+    "packageManager": "npm",
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}
