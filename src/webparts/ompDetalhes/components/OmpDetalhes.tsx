@@ -41,14 +41,238 @@ var _documentoID;
 var _url;
 var _arrNomeArquivo;
 var _arrNomeArquivoAttachmentFiles;
+var _documentoNumero;
 
 export interface IReactGetItemsState {
 
-  itemsListOMP: [],
+  itemsConjuntos: [
+    {
+      "ID": any,
+      "Title": any,
+      "PIE": any,
+      "PATS": any,
+      "DescricaoPATS": any,
+      "Atual": any,
+      "VersaoAtual": any,
+      "cSAtual": any,
+      "Nova": any,
+      "VersaoNova": any,
+      "CSNova": any,
+      "DisposicaoEstoque": any,
+      "disposicaoEstoqueEscolha": any,
+      "DisposicaoFornecedor": any,
+      "DisposicaoFornecedorEscolha": any,
+      "DisposicaoEmtransito": any,
+      "disposicaoEmtransitoEscolha": any,
+      "HistoricoAlteracao": any,
+    }],
+  itemsSubConjuntos: [
+    {
+      "ID": any,
+      "Title": any,
+      "PIE": any,
+      "PATS": any,
+      "DescricaoPATS": any,
+      "Atual": any,
+      "VersaoAtual": any,
+      "cSAtual": any,
+      "Nova": any,
+      "VersaoNova": any,
+      "CSNova": any,
+      "DisposicaoEstoque": any,
+      "disposicaoEstoqueEscolha": any,
+      "DisposicaoFornecedor": any,
+      "DisposicaoFornecedorEscolha": any,
+      "DisposicaoEmtransito": any,
+      "disposicaoEmtransitoEscolha": any,
+      "HistoricoAlteracao": any,
+    }],
+  itemsPontoCorte: [],
+  itemsAssistenciaTecnica: [],
+  itemsAprovacoes: [],
 
 }
 
+
+const tablecolumnsPontoCorte = [
+  {
+    dataField: "OMP.ID",
+    text: "OMP",
+    headerClasses: 'text-center',
+    classes: 'text-center',
+    headerStyle: { "backgroundColor": "#bee5eb", "width": "100px" },
+  },
+  {
+    dataField: "PIE.ID",
+    text: "Código PIE",
+    classes: 'text-center',
+    headerClasses: 'text-center',
+    headerStyle: { "backgroundColor": "#bee5eb", "width": "100px" },
+  },
+  {
+    dataField: "Title",
+    text: "Observação",
+    headerClasses: 'text-center',
+    headerStyle: { backgroundColor: '#bee5eb' },
+  },
+  {
+    dataField: "Data",
+    text: "Data",
+    headerClasses: 'text-center',
+    headerStyle: { "backgroundColor": "#bee5eb", "width": "200px" },
+    classes: 'text-center',
+    formatter: (rowContent, row) => {
+      var data = new Date(row.Data);
+      var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear().toString().substr(-2) + ' ' + ("0" + (data.getHours())).slice(-2) + ':' + ("0" + (data.getMinutes())).slice(-2);
+      return dtdata;
+    }
+  },
+
+]
+
+
+const tablecolumnsAssistenciaTecnica = [
+  {
+    dataField: "OMP.ID",
+    text: "OMP",
+    headerClasses: 'text-center',
+    classes: 'text-center',
+    headerStyle: { backgroundColor: '#bee5eb' },
+  },
+  {
+    dataField: "PIE.ID",
+    text: "Código PIE",
+    classes: 'text-center',
+    headerClasses: 'text-center',
+    headerStyle: { backgroundColor: '#bee5eb' },
+  },
+  {
+    dataField: "PATS.ID",
+    text: "Código PATS",
+    classes: 'text-center',
+    headerClasses: 'text-center',
+    headerStyle: { backgroundColor: '#bee5eb' },
+  },
+  {
+    dataField: "DataEntrega",
+    text: "Data de entrega do material",
+    headerClasses: 'text-center',
+    headerStyle: { backgroundColor: '#bee5eb' },
+    classes: 'text-center',
+    formatter: (rowContent, row) => {
+      var data = new Date(row.DataEntrega);
+      var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear().toString().substr(-2) + ' ' + ("0" + (data.getHours())).slice(-2) + ':' + ("0" + (data.getMinutes())).slice(-2);
+      return dtdata;
+    }
+  },
+  {
+    dataField: "Modified",
+    text: "Data de criação",
+    headerStyle: { "backgroundColor": "#bee5eb" },
+    classes: 'headerPreStage text-center',
+    headerClasses: 'text-center',
+    formatter: (rowContent, row) => {
+      var dataModificado = new Date(row.Modified);
+      var dtdataModificado = ("0" + dataModificado.getDate()).slice(-2) + '/' + ("0" + (dataModificado.getMonth() + 1)).slice(-2) + '/' + dataModificado.getFullYear().toString().substr(-2) + '<br/>' + ("0" + (dataModificado.getHours())).slice(-2) + ':' + ("0" + (dataModificado.getMinutes())).slice(-2);
+      //return dtdataCriacao;
+      return <div dangerouslySetInnerHTML={{ __html: `${dtdataModificado}` }} />;
+    }
+  },
+  {
+    dataField: "Editor.Title",
+    classes: 'headerPreStage',
+    text: "Modificado por",
+    headerStyle: { "backgroundColor": "#bee5eb" },
+    headerClasses: 'text-center',
+  },
+]
+
+
+const tablecolumnsAprovacoes = [
+  {
+    dataField: "Atribu_x00ed_da_x0020_a",
+    text: "Atribuido a",
+    headerClasses: 'text-center',
+    headerStyle: { backgroundColor: '#bee5eb' },
+  },
+  {
+    dataField: "Status",
+    text: "Status",
+    classes: 'text-center',
+    headerClasses: 'text-center',
+    headerStyle: { backgroundColor: '#bee5eb' },
+  },
+  {
+    dataField: "Data_x0020_de_x0020_Conclus_x00e",
+    text: "Data de Conclusão",
+    headerClasses: 'text-center',
+    headerStyle: { backgroundColor: '#bee5eb' },
+    classes: 'text-center',
+    formatter: (rowContent, row) => {
+      var data = new Date(row.Data_x0020_de_x0020_Conclus_x00e);
+      var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear().toString().substr(-2) + ' ' + ("0" + (data.getHours())).slice(-2) + ':' + ("0" + (data.getMinutes())).slice(-2);
+      return dtdata;
+    }
+  },
+]
+
 export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IReactGetItemsState> {
+
+
+  public constructor(props: IOmpDetalhesProps, state: IReactGetItemsState) {
+    super(props);
+    this.state = {
+
+      itemsConjuntos: [
+        {
+          "ID": "",
+          "Title": "",
+          "PIE": "",
+          "PATS": "",
+          "DescricaoPATS": "",
+          "Atual": "",
+          "VersaoAtual": "",
+          "cSAtual": "",
+          "Nova": "",
+          "VersaoNova": "",
+          "CSNova": "",
+          "DisposicaoEstoque": "",
+          "disposicaoEstoqueEscolha": "",
+          "DisposicaoFornecedor": "",
+          "DisposicaoFornecedorEscolha": "",
+          "DisposicaoEmtransito": "",
+          "disposicaoEmtransitoEscolha": "",
+          "HistoricoAlteracao": "",
+        }
+      ],
+      itemsSubConjuntos: [
+        {
+          "ID": "",
+          "Title": "",
+          "PIE": "",
+          "PATS": "",
+          "DescricaoPATS": "",
+          "Atual": "",
+          "VersaoAtual": "",
+          "cSAtual": "",
+          "Nova": "",
+          "VersaoNova": "",
+          "CSNova": "",
+          "DisposicaoEstoque": "",
+          "disposicaoEstoqueEscolha": "",
+          "DisposicaoFornecedor": "",
+          "DisposicaoFornecedorEscolha": "",
+          "DisposicaoEmtransito": "",
+          "disposicaoEmtransitoEscolha": "",
+          "HistoricoAlteracao": "",
+        }
+      ],
+      itemsPontoCorte: [],
+      itemsAssistenciaTecnica: [],
+      itemsAprovacoes: [],
+    }
+
+  }
 
   public async componentDidMount() {
 
@@ -235,65 +459,364 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
           </div>
 
           <div className="card">
-            <div className="card-header btn" id="headingAnexos" data-toggle="collapse" data-target="#collapseAnexos" aria-expanded="true" aria-controls="collapseAnexos">
+            <div className="card-header btn" id="headingConjuntos" data-toggle="collapse" data-target="#collapseConjuntos" aria-expanded="true" aria-controls="collapseConjuntos">
               <h5 className="mb-0 text-info">
                 Conjuntos
               </h5>
             </div>
-            <div id="collapseAnexos" className="collapse show" aria-labelledby="headingOne">
+
+            <div id="collapseConjuntos" className="collapse show" aria-labelledby="headingOne">
+
               <div className="card-body">
 
-                <div className="form-group border m-10 padding10">
-                  <div className="form-row">
-                    <div className="form-group col-md border m-1">
-                      <label htmlFor="txtSintese">Código PIE</label><br></br>
-                      <span className="text-info" id='txtSintese'>74.716.00820-7</span>
-                    </div>
-                    <div className="form-group col-md border m-1">
-                      <label htmlFor="txtTipo">Descrição</label><br></br>
-                      <span className="text-info" id='txtTipo'>COFRE 1/2" P 1/2" LEVEL 2V1E1 C/ CDP10 DN400 ROHS</span>
-                    </div>
-                  </div>
-                </div>
+                {this.state.itemsConjuntos.map(function (item, key) {
+                  return (
+                    <><div className='padding10 col-md border m-1 bg-light text-dark rounded'>
 
-                <div className="form-group border m-10 padding10">
-                  <div className="form-row">
-                    <div className="form-group col-md border m-1">
-                      <label htmlFor="txtSintese">Código PATS</label><br></br>
-                      <span className="text-info" id='txtSintese'>4434454</span>
-                    </div>
-                    <div className="form-group col-md border m-1">
-                      <label htmlFor="txtTipo">Descrição</label><br></br>
-                      <span className="text-info" id='txtTipo'>COFRE 4545 444454 545454</span>
-                    </div>
-                  </div>
-                </div>
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            PIE
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Código<br></br>
+                            <span className="text-info" id='txtSintese'>{item.PIE}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Descrição<br></br>
+                            <span className="text-info" id='txtTipo'>{item.Title}</span>
+                          </div>
+                        </div>
+                      </div>
 
-                <div className="form-group border m-10 padding10">
-                  <div className="form-row">
-                    <div className="form-group col-md border m-1 alinhamentoMeio">
-                      <label htmlFor="txtSintese">Atual</label><br></br>
-                    </div>
-                    <div className="form-group col-md border m-1">
-                      <label htmlFor="txtTipo">Revisão</label><br></br>
-                      <span className="text-info" id='txtTipo'>00</span>
-                    </div>
-                    <div className="form-group col-md border m-1">
-                      <label htmlFor="txtSintese">Versão</label><br></br>
-                      <span className="text-info" id='txtSintese'>1.0</span>
-                    </div>
-                    <div className="form-group col-md border m-1">
-                      <label htmlFor="txtSintese">CS</label><br></br>
-                      <span className="text-info" id='txtSintese'>1234 564</span>
-                    </div>
-                  </div>
-                </div>
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            PATS<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Código<br></br>
+                            <span className="text-info" id='txtSintese'>{item.PATS}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Descrição<br></br>
+                            <span className="text-info" id='txtTipo'>{item.DescricaoPATS}</span>
+                          </div>
+                        </div>
+                      </div>
 
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            <label htmlFor="txtSintese">Atual</label><br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Revisão<br></br>
+                            <span className="text-info" id='txtTipo'>{item.Atual}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Versão<br></br>
+                            <span className="text-info" id='txtSintese'>{item.VersaoAtual}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            CS<br></br>
+                            <span className="text-info" id='txtSintese'>{item.cSAtual}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            Nova<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Revisão<br></br>
+                            <span className="text-info" id='txtTipo'>{item.Nova}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Versão<br></br>
+                            <span className="text-info" id='txtSintese'>{item.VersaoNova}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            CS<br></br>
+                            <span className="text-info" id='txtSintese'>{item.CSNova}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            Estoque<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Revisão<br></br>
+                            <span className="text-info" id='txtTipo'>{item.DisposicaoEstoque}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Versão<br></br>
+                            <span className="text-info" id='txtSintese'>{item.disposicaoEstoqueEscolha}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            Fornecedor<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Disposição<br></br>
+                            <span className="text-info" id='txtTipo'>{item.DisposicaoFornecedor}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Escolha<br></br>
+                            <span className="text-info" id='txtSintese'>{item.DisposicaoFornecedorEscolha}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            Em trânsito<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Disposição<br></br>
+                            <span className="text-info" id='txtTipo'>{item.DisposicaoEmtransito}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Escolha<br></br>
+                            <span className="text-info" id='txtSintese'>{item.disposicaoEmtransitoEscolha}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            Histórico<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            <span className="text-info" id='txtTipo'>{item.HistoricoAlteracao}</span>
+                          </div>
+                        </div>
+                      </div>
+
+
+                    </div><br></br></>
+                  );
+
+                })}
+
+              </div>
+
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-header btn" id="headingSubConjuntos" data-toggle="collapse" data-target="#collapseSubConjuntos" aria-expanded="true" aria-controls="collapseSubConjuntos">
+              <h5 className="mb-0 text-info">
+                Sub-Conjuntos
+              </h5>
+            </div>
+
+            <div id="collapseSubConjuntos" className="collapse show" aria-labelledby="headingOne">
+
+              <div className="card-body">
+
+
+                {this.state.itemsSubConjuntos.map(function (item, key) {
+                  return (
+                    <><div className='padding10 col-md border m-1 bg-light text-dark rounded'>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            PIE
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Código<br></br>
+                            <span className="text-info" id='txtSintese'>{item.PIE}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Descrição<br></br>
+                            <span className="text-info" id='txtTipo'>{item.Title}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            PATS<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Código<br></br>
+                            <span className="text-info" id='txtSintese'>{item.PATS}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Descrição<br></br>
+                            <span className="text-info" id='txtTipo'>{item.DescricaoPATS}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            <label htmlFor="txtSintese">Atual</label><br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Revisão<br></br>
+                            <span className="text-info" id='txtTipo'>{item.Atual}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Versão<br></br>
+                            <span className="text-info" id='txtSintese'>{item.VersaoAtual}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            CS<br></br>
+                            <span className="text-info" id='txtSintese'>{item.cSAtual}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            Nova<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Revisão<br></br>
+                            <span className="text-info" id='txtTipo'>{item.Nova}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Versão<br></br>
+                            <span className="text-info" id='txtSintese'>{item.VersaoNova}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            CS<br></br>
+                            <span className="text-info" id='txtSintese'>{item.CSNova}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            Estoque<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Revisão<br></br>
+                            <span className="text-info" id='txtTipo'>{item.DisposicaoEstoque}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Versão<br></br>
+                            <span className="text-info" id='txtSintese'>{item.disposicaoEstoqueEscolha}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            Fornecedor<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Disposição<br></br>
+                            <span className="text-info" id='txtTipo'>{item.DisposicaoFornecedor}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Escolha<br></br>
+                            <span className="text-info" id='txtSintese'>{item.DisposicaoFornecedorEscolha}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            Em trânsito<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Disposição<br></br>
+                            <span className="text-info" id='txtTipo'>{item.DisposicaoEmtransito}</span>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            Escolha<br></br>
+                            <span className="text-info" id='txtSintese'>{item.disposicaoEmtransitoEscolha}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="form-row">
+                          <div className="form-group labelConjuntosSubconjutos ">
+                            Histórico<br></br>
+                          </div>
+                          <div className="form-group col-md border m-1">
+                            <span className="text-info" id='txtTipo'>{item.HistoricoAlteracao}</span>
+                          </div>
+                        </div>
+                      </div>
+
+
+                    </div><br></br></>
+                  );
+
+                })}
+
+              </div>
+
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-header btn" id="headingPontoCorte" data-toggle="collapse" data-target="#collapsePontoCorte" aria-expanded="true" aria-controls="collapsePontoCorte">
+              <h5 className="mb-0 text-info">
+                Ponto de Corte
+              </h5>
+            </div>
+            <div id="collapsePontoCorte" className="collapse show" aria-labelledby="headingOne">
+              <div className="card-body">
+                <div id='tabelaPontoCorte'>
+                  <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItensPontoCorte" keyField='id' data={this.state.itemsPontoCorte} columns={tablecolumnsPontoCorte} headerClasses="header-class" />
+                </div>
               </div>
             </div>
           </div>
 
+          <div className="card">
+            <div className="card-header btn" id="headingAssistenciaTecnica" data-toggle="collapse" data-target="#collapseAssistenciaTecnica" aria-expanded="true" aria-controls="collapseAssistenciaTecnica">
+              <h5 className="mb-0 text-info">
+                Informações Assistência Técnica
+              </h5>
+            </div>
+            <div id="collapseAssistenciaTecnica" className="collapse show" aria-labelledby="headingOne">
+              <div className="card-body">
+                <div id='tabelaAssistenciaTecnica'>
+                  <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItensAssistenciaTecnica" keyField='id' data={this.state.itemsAssistenciaTecnica} columns={tablecolumnsAssistenciaTecnica} headerClasses="header-class" />
+                </div>
+              </div>
+            </div>
+          </div>
 
+          <div className="card">
+            <div className="card-header btn" id="headingAprovacoes" data-toggle="collapse" data-target="#collapseAprovacoes" aria-expanded="true" aria-controls="collapseAprovacoes">
+              <h5 className="mb-0 text-info">
+                Aprovações
+              </h5>
+            </div>
+            <div id="collapseAprovacoes" className="collapse show" aria-labelledby="headingOne">
+              <div className="card-body">
+                <div id='tabelaAprovacoes'>
+                  <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItensAprovacoes" keyField='id' data={this.state.itemsAprovacoes} columns={tablecolumnsAprovacoes} headerClasses="header-class" />
+                </div>
+              </div>
+            </div>
+          </div>
 
         </div>
 
@@ -325,11 +848,11 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
 
   protected handler() {
 
-    var reactHandlerOMP = this;
 
     jQuery.ajax({
       url: `${this.props.siteurl}/_api/web/lists/getbytitle('Ordem de Modificação de Produto')/items?$top=4999&$orderby= ID desc&$select=ID,Title,Numero,TipoOMP,Objetivo,Status,Created,Author/Title,DivisaoImpressoras,CIProducao,CIAssistenciaTecnica,CIObservacao,DescricaoProblema,SolucaoEncontrada,Alteracoes,DocumentosAlterados,DocumentosOrigem,ResponsavelTecnico/Title,ResponsavelArea/Title,AreaExecutoraFabrica/Title,AreaExecutoraAT/Title,siteNovoSPOnline,txtResponsavelTecnico,txtResponsavelArea,txtAreaExecutoraFabrica,txtAreaExecutoraAT&$expand=Author,ResponsavelTecnico,ResponsavelArea,AreaExecutoraFabrica,AreaExecutoraAT&$filter=ID eq ` + _documentoID,
       type: "GET",
+      async: false,
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
 
@@ -340,6 +863,10 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
           for (var i = 0; i < resultData.d.results.length; i++) {
 
             var numero = resultData.d.results[i].Numero;
+            _documentoNumero = numero;
+
+            console.log("_documentoNumero", _documentoNumero);
+
             var status = resultData.d.results[i].Status;
 
             var sintese = resultData.d.results[i].Title;
@@ -406,6 +933,93 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
         console.log(jqXHR.responseText);
       }
     });
+
+
+    var reactItemsConjuntos = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Conjunto' and OMP/ID eq ` + _documentoID,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        reactItemsConjuntos.setState({
+          itemsConjuntos: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+    var reactItemsSubConjuntos = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Subconjunto' and OMP/ID eq ` + _documentoID,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        reactItemsSubConjuntos.setState({
+          itemsSubConjuntos: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+    var reactItemsPontoCorte = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Ponto de Corte')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,Data&$expand=OMP,PIE&$filter=OMP/ID eq ` + _documentoID,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        console.log("resultData", resultData);
+        reactItemsPontoCorte.setState({
+          itemsPontoCorte: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+    var reactItemsInforAssistenciaTecnica = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Materiais')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,PATS/ID,DataEntrega,Modified,Editor/Title&$expand=OMP,PIE,PATS,Editor&$filter=OMP/ID eq ` + _documentoID,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        console.log("resultData", resultData);
+        reactItemsInforAssistenciaTecnica.setState({
+          itemsAssistenciaTecnica: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+    var reactItemsAprovacoes = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Aprovacoes_BKP02')/items?$top=50&$orderby= Created asc&$select=ID,Title,Atribu_x00ed_da_x0020_a,Status,Data_x0020_de_x0020_Conclus_x00e&$filter=Title eq ` + _documentoNumero,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        console.log("resultData", resultData);
+        reactItemsAprovacoes.setState({
+          itemsAprovacoes: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
 
 
   }

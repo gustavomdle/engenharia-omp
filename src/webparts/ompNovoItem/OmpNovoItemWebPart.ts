@@ -21,7 +21,9 @@ export default class OmpNovoItemWebPart extends BaseClientSideWebPart<IOmpNovoIt
     const element: React.ReactElement<IOmpNovoItemProps> = React.createElement(
       OmpNovoItem,
       {
-        description: this.properties.description
+        description: this.properties.description,
+        context: this.context,
+        siteurl: this.context.pageContext.web.absoluteUrl,
       }
     );
 
