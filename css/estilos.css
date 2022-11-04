@@ -51,6 +51,14 @@
     display: none;
 }
 
+.padding10{
+    padding: 10px;
+}
+
+.alinhamentoMeio{
+    vertical-align:middle;
+}
+
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

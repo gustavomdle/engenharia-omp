@@ -71,7 +71,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
           <div className="card">
             <div className="card-header btn" id="headingInformacoesProduto" data-toggle="collapse" data-target="#collapseInformacoesProduto" aria-expanded="true" aria-controls="collapseInformacoesProduto">
               <h5 className="mb-0 text-info">
-                Detalhes da OMP 
+                Detalhes da OMP
               </h5>
             </div>
             <div id="collapseInformacoesProduto" className="collapse show" aria-labelledby="headingOne">
@@ -82,7 +82,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
                     <div className="form-group col-md text-info ">
                       <b>DIPS Nro: <span id='txtNro'></span></b><br></br>
                       Status: <span id='txtStatus'></span>
-                      
+
                     </div>
                     <div className="form-group col-md text-secondary right ">
 
@@ -234,6 +234,67 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
             </div>
           </div>
 
+          <div className="card">
+            <div className="card-header btn" id="headingAnexos" data-toggle="collapse" data-target="#collapseAnexos" aria-expanded="true" aria-controls="collapseAnexos">
+              <h5 className="mb-0 text-info">
+                Conjuntos
+              </h5>
+            </div>
+            <div id="collapseAnexos" className="collapse show" aria-labelledby="headingOne">
+              <div className="card-body">
+
+                <div className="form-group border m-10 padding10">
+                  <div className="form-row">
+                    <div className="form-group col-md border m-1">
+                      <label htmlFor="txtSintese">Código PIE</label><br></br>
+                      <span className="text-info" id='txtSintese'>74.716.00820-7</span>
+                    </div>
+                    <div className="form-group col-md border m-1">
+                      <label htmlFor="txtTipo">Descrição</label><br></br>
+                      <span className="text-info" id='txtTipo'>COFRE 1/2" P 1/2" LEVEL 2V1E1 C/ CDP10 DN400 ROHS</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-group border m-10 padding10">
+                  <div className="form-row">
+                    <div className="form-group col-md border m-1">
+                      <label htmlFor="txtSintese">Código PATS</label><br></br>
+                      <span className="text-info" id='txtSintese'>4434454</span>
+                    </div>
+                    <div className="form-group col-md border m-1">
+                      <label htmlFor="txtTipo">Descrição</label><br></br>
+                      <span className="text-info" id='txtTipo'>COFRE 4545 444454 545454</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-group border m-10 padding10">
+                  <div className="form-row">
+                    <div className="form-group col-md border m-1 alinhamentoMeio">
+                      <label htmlFor="txtSintese">Atual</label><br></br>
+                    </div>
+                    <div className="form-group col-md border m-1">
+                      <label htmlFor="txtTipo">Revisão</label><br></br>
+                      <span className="text-info" id='txtTipo'>00</span>
+                    </div>
+                    <div className="form-group col-md border m-1">
+                      <label htmlFor="txtSintese">Versão</label><br></br>
+                      <span className="text-info" id='txtSintese'>1.0</span>
+                    </div>
+                    <div className="form-group col-md border m-1">
+                      <label htmlFor="txtSintese">CS</label><br></br>
+                      <span className="text-info" id='txtSintese'>1234 564</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+
+
         </div>
 
         <div className="text-right">
@@ -241,7 +302,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
         </div>
 
         <div className='hidden'>
-        <FontAwesomeIcon icon={faFile} />;
+          <FontAwesomeIcon icon={faFile} />;
         </div>
 
       </div>
