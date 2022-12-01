@@ -7,21 +7,23 @@ import {
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
-import * as strings from 'DipsNovoItemWebPartStrings';
-import DipsNovoItem from './components/DipsNovoItem';
-import { IDipsNovoItemProps } from './components/IDipsNovoItemProps';
+import * as strings from 'OmpEditarItemWebPartStrings';
+import OmpEditarItem from './components/OmpEditarItem';
+import { IOmpEditarItemProps } from './components/IOmpEditarItemProps';
 
-export interface IDipsNovoItemWebPartProps {
+export interface IOmpEditarItemWebPartProps {
   description: string;
 }
 
-export default class DipsNovoItemWebPart extends BaseClientSideWebPart<IDipsNovoItemWebPartProps> {
+export default class OmpEditarItemWebPart extends BaseClientSideWebPart<IOmpEditarItemWebPartProps> {
 
   public render(): void {
-    const element: React.ReactElement<IDipsNovoItemProps> = React.createElement(
-      DipsNovoItem,
+    const element: React.ReactElement<IOmpEditarItemProps> = React.createElement(
+      OmpEditarItem,
       {
-        description: this.properties.description
+        description: this.properties.description,
+        context: this.context,
+        siteurl: this.context.pageContext.web.absoluteUrl,
       }
     );
 

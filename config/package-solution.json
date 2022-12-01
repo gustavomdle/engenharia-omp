@@ -3,7 +3,7 @@
   "solution": {
     "name": "engenharia-omp-diebold",
     "id": "5ccf88c6-2ff6-4a33-b260-39dfbd8e8627",
-    "version": "1.0.0.5",
+    "version": "1.0.0.6",
     "includeClientSideAssets": true,
     "isDomainIsolated": false,
     "developer": {

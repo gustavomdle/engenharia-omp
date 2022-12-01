@@ -37,11 +37,14 @@ require("../../../../css/estilos.css");
 
 
 
-var _documentoID;
+var _idOMP;
 var _url;
 var _arrNomeArquivo;
 var _arrNomeArquivoAttachmentFiles;
 var _documentoNumero;
+var _web;
+var _pos = 0;
+var _pos2 = 0;
 
 export interface IReactGetItemsState {
 
@@ -90,6 +93,18 @@ export interface IReactGetItemsState {
   itemsPontoCorte: [],
   itemsAssistenciaTecnica: [],
   itemsAprovacoes: [],
+  itemsListAnexosItem: [
+    {
+      "FileName": any,
+      "ServerRelativeUrl": any,
+    }
+  ],
+  itemsListAnexos: [
+    {
+      "Name": any,
+      "ServerRelativeUrl": any,
+    }
+  ],
 
 }
 
@@ -270,14 +285,35 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
       itemsPontoCorte: [],
       itemsAssistenciaTecnica: [],
       itemsAprovacoes: [],
+      itemsListAnexosItem: [
+        {
+          "FileName": "",
+          "ServerRelativeUrl": ""
+        }
+      ],
+      itemsListAnexos: [
+        {
+          "Name": "",
+          "ServerRelativeUrl": "",
+        }
+      ],
     }
 
   }
 
   public async componentDidMount() {
 
+    _web = new Web(this.props.context.pageContext.web.absoluteUrl);
     var queryParms = new UrlQueryParameterCollection(window.location.href);
-    _documentoID = parseInt(queryParms.getValue("DocumentoID"));
+    _idOMP = parseInt(queryParms.getValue("DocumentoID"));
+
+    document
+      .getElementById("btnEditar")
+      .addEventListener("click", (e: Event) => this.editar());
+
+    document
+      .getElementById("btnVoltar")
+      .addEventListener("click", (e: Event) => this.voltar());
 
     this.handler();
     this.getAnexos();
@@ -304,7 +340,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group col-md text-info ">
-                      <b>DIPS Nro: <span id='txtNro'></span></b><br></br>
+                      <b>OMP Nro: <span id='txtNro'></span></b><br></br>
                       Status: <span id='txtStatus'></span>
 
                     </div>
@@ -449,7 +485,55 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
                 <div className="form-group">
                   <div className="form-row ">
                     <div className="form-group col-md" >
-                      <div id='conteudoAnexos'></div>
+                      {this.state.itemsListAnexosItem.map((item, key) => {
+
+                        _pos++;
+                        var txtAnexoItem = "anexoItem" + _pos;
+                        var btnExcluirAnexoitem = "btnExcluirAnexoitem" + _pos;
+
+                        var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Anexos')/items('${_idOMP}')/AttachmentFiles`;
+                        url = this.props.siteurl;
+
+                        var caminho = `${url}/Lists/Anexos/Attachments/${_idOMP}/${item.FileName}`;
+
+                        return (
+
+                          <><a id={txtAnexoItem} target='_blank' data-interception="off" href={caminho} title="">{item.FileName}</a><br></br></>
+
+
+                        );
+
+
+
+                      })}
+                      {this.state.itemsListAnexos.map((item, key) => {
+
+                        _pos++;
+                        var txtAnexoItem = "anexoItem" + _pos;
+                        var btnExcluirAnexoitem = "btnExcluirAnexoitem" + _pos;
+
+                        var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Anexos')/items('${_idOMP}')/AttachmentFiles`;
+                        url = this.props.siteurl;
+
+                        var caminho = item.ServerRelativeUrl;
+
+                        var idBotao = `btnExcluirAnexo2${_pos2}`;
+                        var idImagem = `anexo2${_pos2}`;
+
+                        var relativeURL = window.location.pathname;
+                        var url = window.location.pathname;
+                        var nomePagina = url.substring(url.lastIndexOf('/') + 1);
+                        var strRelativeURL = relativeURL.replace(`SitePages/${nomePagina}`, "");
+
+                        return (
+
+                          <><a id={idImagem} target='_blank' data-interception="off" href={caminho} title="">{item.Name}</a><br></br></>
+
+                        );
+
+
+
+                      })}
                     </div>
                   </div>
                 </div>
@@ -821,11 +905,8 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
         </div>
 
         <div className="text-right">
-          <button style={{ "margin": "2px" }} id="btnEditarDocumento2" className="btn btn-success">Editar</button><br></br><br></br>
-        </div>
-
-        <div className='hidden'>
-          <FontAwesomeIcon icon={faFile} />;
+          <button style={{ "margin": "2px" }} type="submit" id="btnVoltar" className="btn btn-secondary">Voltar</button>
+          <button style={{ "margin": "2px" }} id="btnEditar" className="btn btn-success">Editar</button><br></br><br></br>
         </div>
 
       </div>
@@ -850,7 +931,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
 
 
     jQuery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Ordem de Modificação de Produto')/items?$top=4999&$orderby= ID desc&$select=ID,Title,Numero,TipoOMP,Objetivo,Status,Created,Author/Title,DivisaoImpressoras,CIProducao,CIAssistenciaTecnica,CIObservacao,DescricaoProblema,SolucaoEncontrada,Alteracoes,DocumentosAlterados,DocumentosOrigem,ResponsavelTecnico/Title,ResponsavelArea/Title,AreaExecutoraFabrica/Title,AreaExecutoraAT/Title,siteNovoSPOnline,txtResponsavelTecnico,txtResponsavelArea,txtAreaExecutoraFabrica,txtAreaExecutoraAT&$expand=Author,ResponsavelTecnico,ResponsavelArea,AreaExecutoraFabrica,AreaExecutoraAT&$filter=ID eq ` + _documentoID,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Ordem de Modificação de Produto')/items?$top=4999&$orderby= ID desc&$select=ID,Title,Numero,TipoOMP,Objetivo,Status,Created,Author/Title,DivisaoImpressoras,CIProducao,CIAssistenciaTecnica,CIObservacao,DescricaoProblema,SolucaoEncontrada,Alteracoes,DocumentosAlterados,DocumentosOrigem,ResponsavelTecnico/Title,ResponsavelArea/Title,AreaExecutoraFabrica/Title,AreaExecutoraAT/Title,siteNovoSPOnline,txtResponsavelTecnico,txtResponsavelArea,txtAreaExecutoraFabrica,txtAreaExecutoraAT&$expand=Author,ResponsavelTecnico,ResponsavelArea,AreaExecutoraFabrica,AreaExecutoraAT&$filter=ID eq ` + _idOMP,
       type: "GET",
       async: false,
       headers: { 'Accept': 'application/json; odata=verbose;' },
@@ -938,7 +1019,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
     var reactItemsConjuntos = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Conjunto' and OMP/ID eq ` + _documentoID,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Conjunto' and OMP/ID eq ` + _idOMP,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -954,7 +1035,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
     var reactItemsSubConjuntos = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Subconjunto' and OMP/ID eq ` + _documentoID,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Subconjunto' and OMP/ID eq ` + _idOMP,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -970,7 +1051,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
     var reactItemsPontoCorte = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Ponto de Corte')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,Data&$expand=OMP,PIE&$filter=OMP/ID eq ` + _documentoID,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Ponto de Corte')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,Data&$expand=OMP,PIE&$filter=OMP/ID eq ` + _idOMP,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -988,7 +1069,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
     var reactItemsInforAssistenciaTecnica = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Materiais')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,PATS/ID,DataEntrega,Modified,Editor/Title&$expand=OMP,PIE,PATS,Editor&$filter=OMP/ID eq ` + _documentoID,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Materiais')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,PATS/ID,DataEntrega,Modified,Editor/Title&$expand=OMP,PIE,PATS,Editor&$filter=OMP/ID eq ` + _idOMP,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -1025,13 +1106,11 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
   }
 
 
-  protected getAnexos() {
+  protected async getAnexos() {
 
-    var montaAnexo = "";
-    var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Ordem de Modificação de Produto')/items('${_documentoID}')/AttachmentFiles`;
-    _url = this.props.siteurl;
-    console.log("url", url);
-
+    var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Ordem de Modificação de Produto')/items('${_idOMP}')/AttachmentFiles`;
+    var _url = this.props.siteurl;
+    // console.log("url", url);
     $.ajax
       ({
         url: url,
@@ -1042,30 +1121,15 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
           // Accept header: Specifies the format for response data from the server.
           "Accept": "application/json;odata=verbose"
         },
-        success: function (data, status, xhr) {
+        success: async (resultData) => {
 
-          var dataresults = data.d.results;
+          var dataresults = resultData.d.results;
 
-          // _testeGus = data.d.results;
+          var reactHandler = this;
 
-          console.log("dataresults", dataresults);
-
-          for (var i = 0; i < dataresults.length; i++) {
-
-            var nomeArquivo = dataresults[i]["FileName"];
-
-            console.log("nomeArquivo", nomeArquivo);
-            // _arrNomeArquivo.push(nomeArquivo);
-            // _arrNomeArquivoAttachmentFiles.push(nomeArquivo);
-
-            //  montaAnexo += `<img class='imagensDIPS' src='${_url}/Lists/Documentos/Attachments/${_documentoID}/${nomeArquivo}'></img><br/><br/>`;
-
-            montaAnexo += `<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="file" class="svg-inline--fa fa-file cinza " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M0 64C0 28.7 28.7 0 64 0H224V128c0 17.7 14.3 32 32 32H384V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V64zm384 64H256V0L384 128z"></path></svg>
-            <a href='${_url}/Lists/Documentos/Attachments/${_documentoID}/${nomeArquivo}'>${nomeArquivo}</a><br>`;
-
-
-          }
-
+          reactHandler.setState({
+            itemsListAnexosItem: dataresults
+          });
 
         },
         error: function (xhr, status, error) {
@@ -1075,11 +1139,42 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
         console.log("Erro Anexo do item: ", error);
       });
 
-    console.log("montaAnexo", montaAnexo);
 
-    $("#conteudoAnexos").append(montaAnexo);
+    ///
+
+    var relativeURL = window.location.pathname;
+    var url = window.location.pathname;
+    var nomePagina = url.substring(url.lastIndexOf('/') + 1);
+    var strRelativeURL = relativeURL.replace(`SitePages/${nomePagina}`, "");
+
+    console.log("strRelativeURL", strRelativeURL);
+
+    await _web.getFolderByServerRelativeUrl(`${strRelativeURL}/Anexos/${_idOMP}`).files.orderBy('TimeLastModified', true)
+
+      .expand('ListItemAllFields', 'Author').get().then(r => {
+
+        console.log("r", r);
+
+        var reactHandler = this;
+
+        reactHandler.setState({
+          itemsListAnexos: r
+        });
+
+      }).catch((error: any) => {
+        console.log("Erro onChangeCliente: ", error);
+      });
 
 
+  }
+
+
+  protected editar() {
+    window.location.href = `OMP-Editar.aspx?DocumentoID=` + _idOMP;
+  }
+
+  protected voltar() {
+    history.back();
   }
 
 }

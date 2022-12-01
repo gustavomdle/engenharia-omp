@@ -32,6 +32,7 @@ var _descricaoProblema = "";
 var _solucaoEncontrada = "";
 var _alteracoes = "";
 var _documentosAlterados = "";
+var _idOMP;
 
 export interface IReactGetItemsState {
 
@@ -77,10 +78,19 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
       .getElementById("btnValidarSalvar")
       .addEventListener("click", (e: Event) => this.validar());
 
-
     document
       .getElementById("btnSalvar")
       .addEventListener("click", (e: Event) => this.salvar());
+
+    document
+      .getElementById("btnSucesso")
+      .addEventListener("click", (e: Event) => this.fecharSucesso());
+
+    jQuery("#conteudoLoading").html(`<br/><br/><img style="height: 80px; width: 80px" src='${_caminho}/SiteAssets/loading.gif'/>
+      <br/>Aguarde....<br/><br/>
+      Dependendo do tamanho do anexo e a velocidade<br>
+       da Internet essa ação pode demorar um pouco. <br>
+       Não fechar a janela!<br/><br/>`);
 
     this.handler();
 
@@ -362,36 +372,36 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
             </div>
           </div>
 
-          
+
           <div className="card">
-              <div className="card-header btn" id="headingAnexos" data-toggle="collapse" data-target="#collapseAnexos" aria-expanded="true" aria-controls="collapseAnexos">
-                <h6 className="mb-0 text-info" >
-                  Anexos
-                </h6>
-              </div>
-              <div id="collapseAnexos" className="collapse show" aria-labelledby="headingOne" >
+            <div className="card-header btn" id="headingAnexos" data-toggle="collapse" data-target="#collapseAnexos" aria-expanded="true" aria-controls="collapseAnexos">
+              <h6 className="mb-0 text-info" >
+                Anexos
+              </h6>
+            </div>
+            <div id="collapseAnexos" className="collapse show" aria-labelledby="headingOne" >
 
-                <div className="card-body">
+              <div className="card-body">
 
-                  <div className="form-group">
-                    <div className="form-row ">
-                      <div className="form-group col-md" >
-                        <label htmlFor="txtTitulo">Anexo </label><span className="required"> *</span><br></br>
-                        <input className="multi" data-maxsize="1024" type="file" id="input" multiple />
-                      </div>
+                <div className="form-group">
+                  <div className="form-row ">
+                    <div className="form-group col-md" >
+                      <label htmlFor="txtTitulo">Anexo </label><span className="required"> *</span><br></br>
+                      <input className="multi" data-maxsize="1024" type="file" id="input" multiple />
+                    </div>
 
-                      <div className="form-group col-md" >
-
-                      </div>
+                    <div className="form-group col-md" >
 
                     </div>
-                    <br />
-                    <p className='text-info'>Total máximo permitido: 15 MB</p>
 
                   </div>
+                  <br />
+                  <p className='text-info'>Total máximo permitido: 15 MB</p>
+
                 </div>
               </div>
             </div>
+          </div>
 
           <br></br>
 
@@ -402,7 +412,9 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
         </div>
 
 
-      </div><div className="modal fade" id="modalConfirmarSalvar" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      </div>
+
+        <div className="modal fade" id="modalConfirmarSalvar" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
@@ -420,7 +432,36 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
               </div>
             </div>
           </div>
-        </div></>
+        </div>
+
+        <div className="modal fade" id="modalCarregando" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div>
+            <div className="modal-dialog" role="document">
+              <div className="modal-content">
+                <div id='conteudoLoading' className='carregando'></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucesso" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                OMP criada com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucesso" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </>
 
 
     );
@@ -700,6 +741,9 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
 
   protected async salvar() {
 
+    jQuery("#modalConfirmarSalvar").modal('hide');
+    jQuery("#modalCarregando").modal({ backdrop: 'static', keyboard: false });
+
     var titulo = $("#txtTitulo").val();
     var tipo = $("#ddlTipo").val();
     var objetivo = $("#ddlObjetivo").val();
@@ -709,7 +753,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
     var solucaoEncontrada = _solucaoEncontrada;
     var alteracoes = _alteracoes;
     var documentosAlterados = _documentosAlterados;
-    var documentosOrigem = $("#txtDocumentosOrigem").val();;
+    var documentosOrigem = $("#txtDocumentosOrigem").val();
 
     var responsavelTecnico = $("#ddlResponsavelTecnico").val();
     var responsavelArea = $("#ddlResponsavelArea").val();
@@ -737,45 +781,188 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
     console.log("solucaoEncontrada", solucaoEncontrada);
     console.log("alteracoes", alteracoes);
     console.log("documentosAlterados", documentosAlterados);
-
+    console.log("documentosOrigem", documentosOrigem);
     console.log("responsavelTecnico", responsavelTecnico);
     console.log("responsavelArea", responsavelArea);
     console.log("areaExecutoraFabrica", areaExecutoraFabrica);
     console.log("areaExecutoraAT", areaExecutoraAT);
 
-    await _web.lists
-      .getByTitle("Ordem de Modificação de Produto")
-      .items.add({
-        Title: titulo,
-        TipoOMP: tipo,
-        Objetivo: objetivo,
-        DivisaoImpressoras: divisaoImpressoras,
-        CIProducao: { "results": arrProducao },
-        CIAssistenciaTecnica: { "results": arrAssistenciaTecnica },
-        CIObservacao: observacao,
+    jQuery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Controle da numeração')/items?$top=1&$orderby= ID desc&$select=ID,Numeracao&$filter=Tipo_x0020_da_x0020_OMP eq '${tipo}'`,
+      type: "GET",
+      async: false,
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: async (resultData) => {
 
-        DescricaoProblema: descricaoProblema,
-        SolucaoEncontrada: solucaoEncontrada,
-        Alteracoes: alteracoes,
-        DocumentosAlterados: documentosAlterados,
-        DocumentosOrigem: documentosOrigem,
-        ResponsavelTecnicoId: responsavelTecnico,
-        ResponsavelAreaId: responsavelArea,
-        AreaExecutoraFabricaId: areaExecutoraFabrica,
-        AreaExecutoraATId: areaExecutoraAT
+        console.log("resultData", resultData);
 
-      })
-      .then(response => {
+        if (resultData.d.results.length > 0) {
 
-        console.log("Gravou!!");
+          for (var i = 0; i < resultData.d.results.length; i++) {
+
+            var numeracao = 0;
+
+            numeracao = resultData.d.results[i].Numeracao;
+            numeracao++;
+
+            var idControle = resultData.d.results[i].ID;
+
+            console.log("numeracao", numeracao);
+
+            await _web.lists
+              .getByTitle("Ordem de Modificação de Produto")
+              .items.add({
+                Title: titulo,
+                TipoOMP: tipo,
+                Objetivo: objetivo,
+                DivisaoImpressoras: divisaoImpressoras,
+                CIProducao: { "results": arrProducao },
+                CIAssistenciaTecnica: { "results": arrAssistenciaTecnica },
+                CIObservacao: observacao,
+                DescricaoProblema: descricaoProblema,
+                SolucaoEncontrada: solucaoEncontrada,
+                Alteracoes: alteracoes,
+                DocumentosAlterados: documentosAlterados,
+                DocumentosOrigem: documentosOrigem,
+                ResponsavelTecnicoId: responsavelTecnico,
+                ResponsavelAreaId: responsavelArea,
+                AreaExecutoraFabricaId: areaExecutoraFabrica,
+                AreaExecutoraATId: areaExecutoraAT,
+                Numero: `${numeracao}`,
+                siteNovoSPOnline: "Sim"
+
+              })
+              .then(async response => {
+
+                console.log("Gravou OMP!!");
+                _idOMP = response.data.ID;
+
+                await _web.lists
+                  .getByTitle("Controle da numeração")
+                  .items.getById(idControle).update({
+                    Numeracao: numeracao,
+                  })
+                  .then(response => {
+
+                    this.upload();
+
+                  })
+                  .catch((error: any) => {
+                    console.log(error);
+                  })
+
+              }).catch(err => {
+                console.log("err", err);
+              });
+          }
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+
+  }
+
+
+  protected upload() {
+
+    console.log("Entrou no upload");
+
+    var files = (document.querySelector("#input") as HTMLInputElement).files;
+    var file = files[0];
+
+    //console.log("files.length", files.length);
+
+    if (files.length != 0) {
+
+      console.log("entrou com arquivo");
+
+      _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_idOMP}`).then(async data => {
+
+        await _web.lists
+          .getByTitle("Ordem de Modificação de Produto")
+          .items.getById(_idOMP).update({
+            PastaCriada: "Sim",
+          })
+          .then(async response => {
+
+            for (var i = 0; i < files.length; i++) {
+
+              var nomeArquivo = files[i].name;
+              var rplNomeArquivo = nomeArquivo.replace(/[^0123456789.,a-zA-Z]/g, '');
+
+              //alert(rplNomeArquivo);
+              //Upload a file to the SharePoint Library
+              _web.getFolderByServerRelativeUrl(`${_caminho}/Anexos/${_idOMP}`)
+                //.files.add(files[i].name, files[i], true)
+                .files.add(rplNomeArquivo, files[i], true)
+                .then(async data => {
+
+                  data.file.getItem().then(async item => {
+                    var idAnexo = item.ID;
+
+                    if (i == files.length) {
+                      console.log("anexou:" + rplNomeArquivo);
+                      $("#modalCarregando").modal('hide');
+                      jQuery("#modalSucesso").modal({ backdrop: 'static', keyboard: false })
+                    }
+
+                  })
+                });
+            }
+
+
+          }).catch(err => {
+            console.log("err", err);
+          });
+
+
 
       }).catch(err => {
         console.log("err", err);
       });
 
+      //const folderAddResult = _web.folders.add(`${_caminho}/Anexos/${_idProposta}`);
+      //console.log("foi");
+
+    } else {
+
+      console.log("entrou sem arquivo");
+
+      _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_idOMP}`).then(async data => {
+
+        await _web.lists
+          .getByTitle("Ordem de Modificação de Produto")
+          .items.getById(_idOMP).update({
+            PastaCriada: "Sim",
+          })
+          .then(async response => {
+
+            $("#modalCarregando").modal('hide');
+            jQuery("#modalSucesso").modal({ backdrop: 'static', keyboard: false });
+
+          }).catch(err => {
+            console.log("err", err);
+          });
+
+      }).catch(err => {
+        console.log("err", err);
+      });
+
+    }
+
   }
 
 
+  protected async fecharSucesso() {
+
+    jQuery("#modalSucesso").modal('hide');
+    window.location.href = `OMP-Editar.aspx?DocumentoID=` + _idOMP;
+
+  }
 
 
 }

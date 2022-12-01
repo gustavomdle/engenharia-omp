@@ -6,6 +6,11 @@
     color: rgb(164, 38, 44);
 }
 
+.modalCadastrarConjuntos {
+    max-width: 700px !important;
+}
+
+
 .card {
     margin-bottom: 5px;
 }
