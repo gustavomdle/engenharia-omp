@@ -19,8 +19,8 @@ import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
@@ -43,6 +43,7 @@ var _url;
 var _pos = 0;
 var _pos2 = 0;
 var _pastaCriada;
+var _idConjuntoSubconjunto;
 
 export interface IReactGetItemsState {
 
@@ -91,17 +92,18 @@ export interface IReactGetItemsState {
       "DescricaoPATS": any,
       "Atual": any,
       "VersaoAtual": any,
-      "cSAtual": any,
+      "CSAtual": any,
       "Nova": any,
       "VersaoNova": any,
       "CSNova": any,
       "DisposicaoEstoque": any,
-      "disposicaoEstoqueEscolha": any,
+      "DisposicaoEstoqueEscolha": any,
       "DisposicaoFornecedor": any,
       "DisposicaoFornecedorEscolha": any,
       "DisposicaoEmtransito": any,
-      "disposicaoEmtransitoEscolha": any,
+      "DisposicaoEmtransitoEscolha": any,
       "HistoricoAlteracao": any,
+      "PontoCorte": any,
     }],
   itemsSubConjuntos: [
     {
@@ -112,18 +114,20 @@ export interface IReactGetItemsState {
       "DescricaoPATS": any,
       "Atual": any,
       "VersaoAtual": any,
-      "cSAtual": any,
+      "CSAtual": any,
       "Nova": any,
       "VersaoNova": any,
       "CSNova": any,
       "DisposicaoEstoque": any,
-      "disposicaoEstoqueEscolha": any,
+      "DisposicaoEstoqueEscolha": any,
       "DisposicaoFornecedor": any,
       "DisposicaoFornecedorEscolha": any,
       "DisposicaoEmtransito": any,
-      "disposicaoEmtransitoEscolha": any,
+      "DisposicaoEmtransitoEscolha": any,
       "HistoricoAlteracao": any,
+      "PontoCorte": any,
     }],
+  itemsValorPontoCorte: any,
 
 
 
@@ -274,17 +278,18 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
           "DescricaoPATS": "",
           "Atual": "",
           "VersaoAtual": "",
-          "cSAtual": "",
+          "CSAtual": "",
           "Nova": "",
           "VersaoNova": "",
           "CSNova": "",
           "DisposicaoEstoque": "",
-          "disposicaoEstoqueEscolha": "",
+          "DisposicaoEstoqueEscolha": "",
           "DisposicaoFornecedor": "",
           "DisposicaoFornecedorEscolha": "",
           "DisposicaoEmtransito": "",
-          "disposicaoEmtransitoEscolha": "",
+          "DisposicaoEmtransitoEscolha": "",
           "HistoricoAlteracao": "",
+          "PontoCorte": "",
         }
       ],
       itemsSubConjuntos: [
@@ -296,19 +301,21 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
           "DescricaoPATS": "",
           "Atual": "",
           "VersaoAtual": "",
-          "cSAtual": "",
+          "CSAtual": "",
           "Nova": "",
           "VersaoNova": "",
           "CSNova": "",
           "DisposicaoEstoque": "",
-          "disposicaoEstoqueEscolha": "",
+          "DisposicaoEstoqueEscolha": "",
           "DisposicaoFornecedor": "",
           "DisposicaoFornecedorEscolha": "",
           "DisposicaoEmtransito": "",
-          "disposicaoEmtransitoEscolha": "",
+          "DisposicaoEmtransitoEscolha": "",
           "HistoricoAlteracao": "",
+          "PontoCorte": "",
         }
       ],
+      itemsValorPontoCorte: "",
 
     };
   }
@@ -325,7 +332,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var queryParms = new UrlQueryParameterCollection(window.location.href);
     _idOMP = parseInt(queryParms.getValue("DocumentoID"));
 
-    jQuery("#modalCadastrarConjuntos").modal({ backdrop: 'static', keyboard: false });
+    //jQuery("#modalCadastrarConjuntos").modal({ backdrop: 'static', keyboard: false });
 
     document
       .getElementById("btnValidarSalvar")
@@ -354,6 +361,26 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     document
       .getElementById("btnAbrirAssistenciaTecnica")
       .addEventListener("click", (e: Event) => this.abrirModalCadastrarAssistenciaTecnica());
+
+    document
+      .getElementById("btnCadastrarConjunto")
+      .addEventListener("click", (e: Event) => this.cadastrarConjuntosSubconjuntos("Conjunto"));
+
+    document
+      .getElementById("btnSucessoCadastrarConjunto")
+      .addEventListener("click", (e: Event) => this.sucessoConjuntosSubconjuntos("Salvar"));
+
+    document
+      .getElementById("btnSucessoExcluirConjuntoSubConjunto")
+      .addEventListener("click", (e: Event) => this.sucessoConjuntosSubconjuntos("Excluir"));
+
+    document
+      .getElementById("btnEditarConjunto")
+      .addEventListener("click", (e: Event) => this.editarConjuntosSubconjuntos("Conjunto"));
+
+    document
+      .getElementById("btnSucessoEditarConjuntoSubConjunto")
+      .addEventListener("click", (e: Event) => this.sucessoConjuntosSubconjuntos("Editar"));
 
 
     jQuery("#conteudoLoading").html(`<br/><br/><img style="height: 80px; width: 80px" src='${_caminho}/SiteAssets/loading.gif'/>
@@ -587,143 +614,162 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
               <div className="card-body">
 
-                {this.state.itemsConjuntos.map(function (item, key) {
+                {this.state.itemsConjuntos.map((item, key) => {
+
                   return (
-                    <><div className='padding10 col-md border m-1 bg-light text-dark rounded'>
+                    <>
 
-                      <div>
-                        <div className="form-row">
-                          <div className="form-group labelConjuntosSubconjutos ">
-                            PIE
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Código<br></br>
-                            <span className="text-info" id='txtSintese'>{item.PIE}</span>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Descrição<br></br>
-                            <span className="text-info" id='txtTipo'>{item.Title}</span>
-                          </div>
-                        </div>
+                      <div className='textoDireita'>
+                        <span title='Excluir' className='cursorPointer' onClick={(e) => this.excluirConjuntoSubconjunto(item.ID)}><FontAwesomeIcon icon={faTrash} /></span>&nbsp;
+                        <span title='Editar' className='cursorPointer' onClick={(e) => this.abrirModalEditarConjuntoSubconjunto(item.ID, item.PIE, item.Title, item.PATS, item.DescricaoPATS, item.Atual, item.VersaoAtual, item.CSAtual, item.Nova, item.VersaoNova, item.CSNova, item.DisposicaoEstoque, item.DisposicaoEstoqueEscolha, item.DisposicaoFornecedor, item.DisposicaoFornecedorEscolha, item.DisposicaoEmtransito, item.DisposicaoEmtransitoEscolha, item.HistoricoAlteracao, item.PontoCorte)}><FontAwesomeIcon icon={faEdit} /></span>
                       </div>
 
-                      <div>
-                        <div className="form-row">
-                          <div className="form-group labelConjuntosSubconjutos ">
-                            PATS<br></br>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Código<br></br>
-                            <span className="text-info" id='txtSintese'>{item.PATS}</span>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Descrição<br></br>
-                            <span className="text-info" id='txtTipo'>{item.DescricaoPATS}</span>
+                      <div className='padding10 col-md border m-1 bg-light text-dark rounded'>
+
+                        <div>
+                          <div className="form-row">
+                            <div className="form-group labelConjuntosSubconjutos ">
+                              PIE
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Código<br></br>
+                              <span className="text-info" id='txtPIE'>{item.PIE}</span>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Descrição<br></br>
+                              <span className="text-info" id='txtTitle'>{item.Title}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <div className="form-row">
-                          <div className="form-group labelConjuntosSubconjutos ">
-                            <label htmlFor="txtSintese">Atual</label><br></br>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Revisão<br></br>
-                            <span className="text-info" id='txtTipo'>{item.Atual}</span>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Versão<br></br>
-                            <span className="text-info" id='txtSintese'>{item.VersaoAtual}</span>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            CS<br></br>
-                            <span className="text-info" id='txtSintese'>{item.cSAtual}</span>
+                        <div>
+                          <div className="form-row">
+                            <div className="form-group labelConjuntosSubconjutos ">
+                              PATS<br></br>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Código<br></br>
+                              <span className="text-info" id='txtPATS'>{item.PATS}</span>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Descrição<br></br>
+                              <span className="text-info" id='txtDescricaoPATS'>{item.DescricaoPATS}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <div className="form-row">
-                          <div className="form-group labelConjuntosSubconjutos ">
-                            Nova<br></br>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Revisão<br></br>
-                            <span className="text-info" id='txtTipo'>{item.Nova}</span>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Versão<br></br>
-                            <span className="text-info" id='txtSintese'>{item.VersaoNova}</span>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            CS<br></br>
-                            <span className="text-info" id='txtSintese'>{item.CSNova}</span>
+                        <div>
+                          <div className="form-row">
+                            <div className="form-group labelConjuntosSubconjutos ">
+                              <label htmlFor="txtSintese">Atual</label><br></br>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Revisão<br></br>
+                              <span className="text-info" id='txtAtual'>{item.Atual}</span>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Versão<br></br>
+                              <span className="text-info" id='txtVersaoAtual'>{item.VersaoAtual}</span>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              CS<br></br>
+                              <span className="text-info" id='txtCSAtual'>{item.CSAtual}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <div className="form-row">
-                          <div className="form-group labelConjuntosSubconjutos ">
-                            Estoque<br></br>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Revisão<br></br>
-                            <span className="text-info" id='txtTipo'>{item.DisposicaoEstoque}</span>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Versão<br></br>
-                            <span className="text-info" id='txtSintese'>{item.disposicaoEstoqueEscolha}</span>
+                        <div>
+                          <div className="form-row">
+                            <div className="form-group labelConjuntosSubconjutos ">
+                              Nova<br></br>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Revisão<br></br>
+                              <span className="text-info" id='txtNova'>{item.Nova}</span>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Versão<br></br>
+                              <span className="text-info" id='txtVersaoNova'>{item.VersaoNova}</span>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              CS<br></br>
+                              <span className="text-info" id='txtCSNova'>{item.CSNova}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <div className="form-row">
-                          <div className="form-group labelConjuntosSubconjutos ">
-                            Fornecedor<br></br>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Disposição<br></br>
-                            <span className="text-info" id='txtTipo'>{item.DisposicaoFornecedor}</span>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Escolha<br></br>
-                            <span className="text-info" id='txtSintese'>{item.DisposicaoFornecedorEscolha}</span>
+                        <div>
+                          <div className="form-row">
+                            <div className="form-group labelConjuntosSubconjutos ">
+                              Estoque<br></br>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Revisão<br></br>
+                              <span className="text-info" id='txtDisposicaoEstoque'>{item.DisposicaoEstoque}</span>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Versão<br></br>
+                              <span className="text-info" id='txtDisposicaoEstoqueEscolha'>{item.DisposicaoEstoqueEscolha}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <div className="form-row">
-                          <div className="form-group labelConjuntosSubconjutos ">
-                            Em trânsito<br></br>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Disposição<br></br>
-                            <span className="text-info" id='txtTipo'>{item.DisposicaoEmtransito}</span>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            Escolha<br></br>
-                            <span className="text-info" id='txtSintese'>{item.disposicaoEmtransitoEscolha}</span>
+                        <div>
+                          <div className="form-row">
+                            <div className="form-group labelConjuntosSubconjutos ">
+                              Fornecedor<br></br>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Disposição<br></br>
+                              <span className="text-info" id='txtDisposicaoFornecedor'>{item.DisposicaoFornecedor}</span>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Escolha<br></br>
+                              <span className="text-info" id='txtDisposicaoFornecedorEscolha'>{item.DisposicaoFornecedorEscolha}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div>
-                        <div className="form-row">
-                          <div className="form-group labelConjuntosSubconjutos ">
-                            Histórico<br></br>
-                          </div>
-                          <div className="form-group col-md border m-1">
-                            <span className="text-info" id='txtTipo'>{item.HistoricoAlteracao}</span>
+                        <div>
+                          <div className="form-row">
+                            <div className="form-group labelConjuntosSubconjutos ">
+                              Em trânsito<br></br>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Disposição<br></br>
+                              <span className="text-info" id='txtDisposicaoEmtransito'>{item.DisposicaoEmtransito}</span>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              Escolha<br></br>
+                              <span className="text-info" id='txtDisposicaoEmtransitoEscolha'>{item.DisposicaoEmtransitoEscolha}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
+
+                        <div>
+                          <div className="form-row">
+                            <div className="form-group labelConjuntosSubconjutos ">
+                              Histórico<br></br>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              <span className="text-info" id='txtHistoricoAlteracao'>{item.HistoricoAlteracao}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="form-row">
+                            <div className="form-group labelConjuntosSubconjutos ">
+                              Ponto de Corte<br></br>
+                            </div>
+                            <div className="form-group col-md border m-1">
+                              <span className="text-info" id='txtHistoricoAlteracao'>{item.PontoCorte}</span>
+                            </div>
+                          </div>
+                        </div>
 
 
-                    </div><br></br></>
+                      </div><br></br></>
                   );
 
                 })}
@@ -797,7 +843,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                           </div>
                           <div className="form-group col-md border m-1">
                             CS<br></br>
-                            <span className="text-info" id='txtSintese'>{item.cSAtual}</span>
+                            <span className="text-info" id='txtSintese'>{item.CSAtual}</span>
                           </div>
                         </div>
                       </div>
@@ -833,7 +879,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                           </div>
                           <div className="form-group col-md border m-1">
                             Versão<br></br>
-                            <span className="text-info" id='txtSintese'>{item.disposicaoEstoqueEscolha}</span>
+                            <span className="text-info" id='txtSintese'>{item.DisposicaoEstoqueEscolha}</span>
                           </div>
                         </div>
                       </div>
@@ -865,7 +911,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                           </div>
                           <div className="form-group col-md border m-1">
                             Escolha<br></br>
-                            <span className="text-info" id='txtSintese'>{item.disposicaoEmtransitoEscolha}</span>
+                            <span className="text-info" id='txtSintese'>{item.DisposicaoEmtransitoEscolha}</span>
                           </div>
                         </div>
                       </div>
@@ -1143,6 +1189,24 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
           </div>
         </div>
 
+        <div className="modal fade" id="modalSucessoEditarConjuntoSubConjunto" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                OMP alterada com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoEditarConjuntoSubConjunto" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
         <div className="modal fade " id="modalCadastrarConjuntos" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog modalCadastrarConjuntos" role="document">
             <div className="modal-content">
@@ -1156,29 +1220,29 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
                 <div className="form-row">
                   <div className="form-group col-md-4">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Código PIE</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="txtCodigoPIE">Código PIE</label><span className="required"> *</span><br></br>
+                    <input type="text" className="form-control" id="txtCodigoPIE" />
                   </div>
                   <div className="form-group col-md-8">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Descrição do código PIE</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="txtDescricaoCodigoPIE">Descrição do código PIE</label><span className="required"> *</span><br></br>
+                    <input type="text" className="form-control" id="txtDescricaoCodigoPIE" />
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group col-md-4">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Código PATS</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="txtCodigoPATS">Código PATS</label><br></br>
+                    <input type="text" className="form-control" id="txtCodigoPATS" />
                   </div>
                   <div className="form-group col-md-8">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Descricão do código PATS</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="txtDescricaoCodigoPATS">Descricão do código PATS</label><br></br>
+                    <input type="text" className="form-control" id="txtDescricaoCodigoPATS" />
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Revisão atual</label><span className="required"> *</span><br></br>
+                    <label htmlFor="ddlRevisaoAtual">Revisão atual</label><br></br>
                     <select id="ddlRevisaoAtual" className="form-control">
                       <option value="0" selected>Selecione...</option>
                       {this.state.itemsRevisaoAtual.map(function (item, key) {
@@ -1189,19 +1253,19 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                     </select>
                   </div>
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Versão Atual</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="txtVersaoAtual">Versão Atual</label><br></br>
+                    <input type="text" className="form-control" id="txtVersaoAtual" />
                   </div>
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">CS Atual</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="txtCSAtual">CS Atual</label><br></br>
+                    <input type="text" className="form-control" id="txtCSAtual" />
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Nova revisão</label><span className="required"> *</span><br></br>
-                    <select id="ddlRevisaoAtual" className="form-control">
+                    <label htmlFor="ddlNovaRevisao">Nova revisão</label><br></br>
+                    <select id="ddlNovaRevisao" className="form-control">
                       <option value="0" selected>Selecione...</option>
                       {this.state.itemsNovaRevisao.map(function (item, key) {
                         return (
@@ -1211,23 +1275,23 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                     </select>
                   </div>
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Versão Nova Revisão</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="txtVersaoNovaRevisao">Versão Nova Revisão</label><br></br>
+                    <input type="text" className="form-control" id="txtVersaoNovaRevisao" />
                   </div>
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">CS Nova revisão</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="txtCSNovaRevisao">CS Nova revisão</label><br></br>
+                    <input type="text" className="form-control" id="txtCSNovaRevisao" />
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Disposição - Estoque</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="txtDisposicaoEstoque">Disposição - Estoque</label><br></br>
+                    <input type="text" className="form-control" id="txtDisposicaoEstoque" />
                   </div>
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Disposição - Estoque (Ação)</label><span className="required"> *</span><br></br>
-                    <select id="ddlRevisaoAtual" className="form-control">
+                    <label htmlFor="ddlDisposicaoEstoqueAcao">Disposição - Estoque (Ação)</label><br></br>
+                    <select id="ddlDisposicaoEstoqueAcao" className="form-control">
                       <option value="0" selected>Selecione...</option>
                       {this.state.itemsDisposicaoEstoqueAcao.map(function (item, key) {
                         return (
@@ -1240,12 +1304,12 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
                 <div className="form-row">
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Disposicão - Fornecedor</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="txtDisposicaoFornecedor">Disposicão - Fornecedor</label><br></br>
+                    <input type="text" className="form-control" id="txtDisposicaoFornecedor" />
                   </div>
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Disposicão - Fornecedor (Ação)</label><span className="required"> *</span><br></br>
-                    <select id="ddlRevisaoAtual" className="form-control">
+                    <label htmlFor="ddlDisposicaoFornecedorAcao">Disposicão - Fornecedor (Ação)</label><br></br>
+                    <select id="ddlDisposicaoFornecedorAcao" className="form-control">
                       <option value="0" selected>Selecione...</option>
                       {this.state.itemsDisposicaoFornecedorAcao.map(function (item, key) {
                         return (
@@ -1258,12 +1322,12 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
                 <div className="form-row">
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Disposicão - Em trânsito</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="txtDisposicaoEmTransito">Disposicão - Em trânsito</label><br></br>
+                    <input type="text" className="form-control" id="txtDisposicaoEmTransito" />
                   </div>
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Disposicão - Em trânsito (Ação)</label><span className="required"> *</span><br></br>
-                    <select id="ddlRevisaoAtual" className="form-control">
+                    <label htmlFor="ddlDisposicaoEmTransitoAcao">Disposicão - Em trânsito (Ação)</label><br></br>
+                    <select id="ddlDisposicaoEmTransitoAcao" className="form-control">
                       <option value="0" selected>Selecione...</option>
                       {this.state.itemsDisposicaoEmTransitoAcao.map(function (item, key) {
                         return (
@@ -1275,23 +1339,171 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                 </div>
 
                 <div className="form-row">
-                  <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Histórico de alteracões</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                  <div className="form-group col-md-9">
+                    <label htmlFor="txtHistoricoAlteracoes">Histórico de alteracões</label><br></br>
+                    <input type="text" className="form-control" id="txtHistoricoAlteracoes" />
                   </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Ponto de Corte</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                  <div className="form-group col-md-3">
+                    <label htmlFor="dtPontoCorte">Ponto de Corte</label><br></br>
+                    <DatePicker formatDate={this.onFormatDate} isMonthPickerVisible={false} className="datePicker" id='dtPontoCorte' />
                   </div>
                 </div>
 
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button id="btnCadastrarSetupBIOS" className="btn btn-success">Salvar</button>
+                <button id="btnCadastrarConjunto" className="btn btn-success">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade " id="modalEditarConjuntoSubConjunto" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog modalCadastrarConjuntos" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Conjuntos - Cadastrar</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+
+                <div className="form-row">
+                  <div className="form-group col-md-4">
+                    <label htmlFor="txtCodigoPIE-Editar">Código PIE</label><span className="required"> *</span><br></br>
+                    <input type="text" className="form-control" id="txtCodigoPIE-Editar" />
+                  </div>
+                  <div className="form-group col-md-8">
+                    <label htmlFor="txtDescricaoCodigoPIE-Editar">Descrição do código PIE</label><span className="required"> *</span><br></br>
+                    <input type="text" className="form-control" id="txtDescricaoCodigoPIE-Editar" />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md-4">
+                    <label htmlFor="txtCodigoPATS-Editar">Código PATS</label><br></br>
+                    <input type="text" className="form-control" id="txtCodigoPATS-Editar" />
+                  </div>
+                  <div className="form-group col-md-8">
+                    <label htmlFor="txtDescricaoCodigoPATS-Editar">Descricão do código PATS</label><br></br>
+                    <input type="text" className="form-control" id="txtDescricaoCodigoPATS-Editar" />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="ddlRevisaoAtual-Editar">Revisão atual</label><br></br>
+                    <select id="ddlRevisaoAtual-Editar" className="form-control">
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsRevisaoAtual.map(function (item, key) {
+                        return (
+                          <option value={item}>{item}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="form-group col-md">
+                    <label htmlFor="txtVersaoAtual-Editar">Versão Atual</label><br></br>
+                    <input type="text" className="form-control" id="txtVersaoAtual-Editar" />
+                  </div>
+                  <div className="form-group col-md">
+                    <label htmlFor="txtCSAtual-Editar">CS Atual</label><br></br>
+                    <input type="text" className="form-control" id="txtCSAtual-Editar" />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="ddlNovaRevisao-Editar">Nova revisão</label><br></br>
+                    <select id="ddlNovaRevisao-Editar" className="form-control">
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsNovaRevisao.map(function (item, key) {
+                        return (
+                          <option value={item}>{item}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="form-group col-md">
+                    <label htmlFor="txtVersaoNovaRevisao-Editar">Versão Nova Revisão</label><br></br>
+                    <input type="text" className="form-control" id="txtVersaoNovaRevisao-Editar" />
+                  </div>
+                  <div className="form-group col-md">
+                    <label htmlFor="txtCSNovaRevisao-Editar">CS Nova revisão</label><br></br>
+                    <input type="text" className="form-control" id="txtCSNovaRevisao-Editar" />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtDisposicaoEstoque-Editar">Disposição - Estoque</label><br></br>
+                    <input type="text" className="form-control" id="txtDisposicaoEstoque-Editar" />
+                  </div>
+                  <div className="form-group col-md">
+                    <label htmlFor="ddlDisposicaoEstoqueAcao-Editar">Disposição - Estoque (Ação)</label><br></br>
+                    <select id="ddlDisposicaoEstoqueAcao-Editar" className="form-control">
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsDisposicaoEstoqueAcao.map(function (item, key) {
+                        return (
+                          <option value={item}>{item}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtDisposicaoFornecedor-Editar">Disposicão - Fornecedor</label><br></br>
+                    <input type="text" className="form-control" id="txtDisposicaoFornecedor-Editar" />
+                  </div>
+                  <div className="form-group col-md">
+                    <label htmlFor="ddlDisposicaoFornecedorAcao-Editar">Disposicão - Fornecedor (Ação)</label><br></br>
+                    <select id="ddlDisposicaoFornecedorAcao-Editar" className="form-control">
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsDisposicaoFornecedorAcao.map(function (item, key) {
+                        return (
+                          <option value={item}>{item}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtDisposicaoEmTransito-Editar">Disposicão - Em trânsito</label><br></br>
+                    <input type="text" className="form-control" id="txtDisposicaoEmTransito-Editar" />
+                  </div>
+                  <div className="form-group col-md">
+                    <label htmlFor="ddlDisposicaoEmTransitoAcao-Editar">Disposicão - Em trânsito (Ação)</label><br></br>
+                    <select id="ddlDisposicaoEmTransitoAcao-Editar" className="form-control">
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsDisposicaoEmTransitoAcao.map(function (item, key) {
+                        return (
+                          <option value={item}>{item}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md-9">
+                    <label htmlFor="txtHistoricoAlteracoes-Editar">Histórico de alteracões</label><br></br>
+                    <input type="text" className="form-control" id="txtHistoricoAlteracoes-Editar" />
+                  </div>
+                  <div className="form-group col-md-3">
+                    <label htmlFor="dtPontoCorte-Editar">Ponto de Corte</label><br></br>
+                    <DatePicker formatDate={this.onFormatDate} value={this.state.itemsValorPontoCorte} isMonthPickerVisible={false} className="datePicker" id='dtPontoCorte-Editar' />
+                  </div>
+                </div>
+
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnEditarConjunto" className="btn btn-success">Editar</button>
               </div>
             </div>
           </div>
@@ -1373,6 +1585,38 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 <button id="btnCadastrarSetupBIOS" className="btn btn-success">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoCadastrarConjunto" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Conjunto cadastrado com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoCadastrarConjunto" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoExcluirConjuntoSubConjunto" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Conjunto/SubConjunto excluido com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoExcluirConjuntoSubConjunto" className="btn btn-primary">OK</button>
               </div>
             </div>
           </div>
@@ -1597,6 +1841,9 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
+
+        console.log("resultData Conjuntos", resultData);
+
         reactItemsConjuntos.setState({
           itemsConjuntos: resultData.d.results
         });
@@ -2390,6 +2637,173 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
   }
 
+
+  protected async cadastrarConjuntosSubconjuntos(tipo) {
+
+    jQuery("#btnCadastrarConjunto").prop("disabled", true);
+
+    var codigoPIE = $("#txtCodigoPIE").val();
+    var descricaoCodigoPIE = $("#txtDescricaoCodigoPIE").val();
+    var codigoPATS = $("#txtCodigoPATS").val();
+    var descricaoCodigoPATS = $("#txtDescricaoCodigoPATS").val();
+    var revisaoAtual = $("#ddlRevisaoAtual").val();
+    var versaoAtual = $("#txtVersaoAtual").val();
+    var CSAtual = $("#txtCSAtual").val();
+    var novaRevisao = $("#ddlNovaRevisao").val();
+    var versaoNovaRevisao = $("#txtVersaoNovaRevisao").val();
+    var CSNovaRevisao = $("#txtCSNovaRevisao").val();
+    var disposicaoEstoque = $("#txtDisposicaoEstoque").val();
+    var disposicaoEstoqueAcao = $("#ddlDisposicaoEstoqueAcao").val();
+    var disposicaoFornecedor = $("#txtDisposicaoFornecedor").val();
+    var disposicaoFornecedorAcao = $("#ddlDisposicaoFornecedorAcao").val();
+    var disposicaoEmTransito = $("#txtDisposicaoEmTransito").val();
+    var disposicaoEmTransitoAcao = $("#ddlDisposicaoEmTransitoAcao").val();
+    var historicoAlteracoes = $("#txtHistoricoAlteracoes").val();
+    var pontoCorte = jQuery("#dtPontoCorte-label").val();
+
+    if (novaRevisao == "0") novaRevisao = null;
+    if (revisaoAtual == "0") revisaoAtual = null;
+    if (disposicaoEstoqueAcao == "0") disposicaoEstoqueAcao = null;
+    if (disposicaoFornecedorAcao == "0") disposicaoFornecedorAcao = null;
+    if (disposicaoEmTransitoAcao == "0") disposicaoEmTransitoAcao = null;
+
+    if (codigoPIE == "") {
+      alert("Forneça o código PIE!");
+      jQuery("#btnCadastrarConjunto").prop("disabled", false);
+      return false;
+    }
+
+    if (descricaoCodigoPIE == "") {
+      alert("Forneça a descrição do Código PIE!");
+      jQuery("#btnCadastrarConjunto").prop("disabled", false);
+      return false;
+    }
+
+    await _web.lists
+      .getByTitle("	Conjuntos e Subconjuntos")
+      .items.add({
+        OMPId: _idOMP,
+        Conjuntos: tipo,
+        PIE: codigoPIE,
+        Title: descricaoCodigoPIE,
+        PATS: codigoPATS,
+        DescricaoPATS: descricaoCodigoPATS,
+        Atual: revisaoAtual,
+        VersaoAtual: versaoAtual,
+        CSAtual: CSAtual,
+        Nova: novaRevisao,
+        VersaoNova: versaoNovaRevisao,
+        CSNova: CSNovaRevisao,
+        DisposicaoEstoque: disposicaoEstoque,
+        DisposicaoEstoqueEscolha: disposicaoEstoqueAcao,
+        DisposicaoFornecedor: disposicaoFornecedor,
+        DisposicaoFornecedorEscolha: disposicaoFornecedorAcao,
+        DisposicaoEmtransito: disposicaoEmTransito,
+        DisposicaoEmtransitoEscolha: disposicaoEmTransitoAcao,
+        HistoricoAlteracao: historicoAlteracoes,
+        PontoCorte: pontoCorte
+      })
+      .then(response => {
+
+        console.log("Cadastrou");
+
+        jQuery("#btnCadastrarConjunto").prop("disabled", false);
+        jQuery("#modalCadastrarConjuntos").modal('hide');
+        jQuery("#modalCadastrarSubConjuntos").modal('hide');
+
+        if (tipo == "Conjunto") jQuery("#modalSucessoCadastrarConjunto").modal({ backdrop: 'static', keyboard: false });
+        else if (tipo == "SubConjunto") jQuery("#modalSucessoCadastrarSubConjunto").modal({ backdrop: 'static', keyboard: false });
+
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+
+  }
+
+
+
+  protected async editarConjuntosSubconjuntos(tipo) {
+
+    jQuery("#btnEditarConjunto").prop("disabled", true);
+
+    var codigoPIE = $("#txtCodigoPIE-Editar").val();
+    var descricaoCodigoPIE = $("#txtDescricaoCodigoPIE-Editar").val();
+    var codigoPATS = $("#txtCodigoPATS-Editar").val();
+    var descricaoCodigoPATS = $("#txtDescricaoCodigoPATS-Editar").val();
+    var revisaoAtual = $("#ddlRevisaoAtual-Editar").val();
+    var versaoAtual = $("#txtVersaoAtual-Editar").val();
+    var CSAtual = $("#txtCSAtual-Editar").val();
+    var novaRevisao = $("#ddlNovaRevisao-Editar").val();
+    var versaoNovaRevisao = $("#txtVersaoNovaRevisao-Editar").val();
+    var CSNovaRevisao = $("#txtCSNovaRevisao-Editar").val();
+    var disposicaoEstoque = $("#txtDisposicaoEstoque-Editar").val();
+    var disposicaoEstoqueAcao = $("#ddlDisposicaoEstoqueAcao-Editar").val();
+    var disposicaoFornecedor = $("#txtDisposicaoFornecedor-Editar").val();
+    var disposicaoFornecedorAcao = $("#ddlDisposicaoFornecedorAcao-Editar").val();
+    var disposicaoEmTransito = $("#txtDisposicaoEmTransito-Editar").val();
+    var disposicaoEmTransitoAcao = $("#ddlDisposicaoEmTransitoAcao-Editar").val();
+    var historicoAlteracoes = $("#txtHistoricoAlteracoes-Editar").val();
+    var pontoCorte = jQuery("#dtPontoCorte-Editar-label").val();
+
+    if (novaRevisao == "0") novaRevisao = null;
+    if (revisaoAtual == "0") revisaoAtual = null;
+    if (disposicaoEstoqueAcao == "0") disposicaoEstoqueAcao = null;
+    if (disposicaoFornecedorAcao == "0") disposicaoFornecedorAcao = null;
+    if (disposicaoEmTransitoAcao == "0") disposicaoEmTransitoAcao = null;
+
+    if (codigoPIE == "") {
+      alert("Forneça o código PIE!");
+      jQuery("#btnCadastrarConjunto").prop("disabled", false);
+      return false;
+    }
+
+    if (descricaoCodigoPIE == "") {
+      alert("Forneça a descrição do Código PIE!");
+      jQuery("#btnCadastrarConjunto").prop("disabled", false);
+      return false;
+    }
+
+    await _web.lists
+      .getByTitle("	Conjuntos e Subconjuntos")
+      .items.getById(_idConjuntoSubconjunto).update({
+        PIE: codigoPIE,
+        Title: descricaoCodigoPIE,
+        PATS: codigoPATS,
+        DescricaoPATS: descricaoCodigoPATS,
+        Atual: revisaoAtual,
+        VersaoAtual: versaoAtual,
+        CSAtual: CSAtual,
+        Nova: novaRevisao,
+        VersaoNova: versaoNovaRevisao,
+        CSNova: CSNovaRevisao,
+        DisposicaoEstoque: disposicaoEstoque,
+        DisposicaoEstoqueEscolha: disposicaoEstoqueAcao,
+        DisposicaoFornecedor: disposicaoFornecedor,
+        DisposicaoFornecedorEscolha: disposicaoFornecedorAcao,
+        DisposicaoEmtransito: disposicaoEmTransito,
+        DisposicaoEmtransitoEscolha: disposicaoEmTransitoAcao,
+        HistoricoAlteracao: historicoAlteracoes,
+        PontoCorte: pontoCorte
+      })
+      .then(response => {
+
+        console.log("Editou");
+
+        jQuery("#btnEditarConjunto").prop("disabled", false);
+        jQuery("#modalEditarConjuntoSubConjunto").modal('hide');
+
+        jQuery("#modalSucessoEditarConjuntoSubConjunto").modal({ backdrop: 'static', keyboard: false });
+
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+
+  }
+
   private onTextChangeObservacao = (newText: string) => {
     _observacao = newText;
     return newText;
@@ -2467,11 +2881,163 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
   }
 
+  protected async sucessoConjuntosSubconjuntos(opcao) {
+
+    var reactItemsConjuntos = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Conjunto' and OMP/ID eq ` + _idOMP,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        reactItemsConjuntos.setState({
+          itemsConjuntos: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+    if (opcao == "Salvar") jQuery("#modalSucessoCadastrarConjunto").modal('hide');
+    if (opcao == "Excluir") jQuery("#modalSucessoExcluirConjuntoSubConjunto").modal('hide');
+    if (opcao == "Editar") jQuery("#modalSucessoEditarConjuntoSubConjunto").modal('hide');
+
+  }
+
   protected abrirModalCadastrarConjuntos() {
 
     // jQuery("#txtItensSetupBIOSCadastrar").val("");
     //  jQuery('#RichTextObservacaoSetupBIOSCadastrar').find('.ql-editor').html("<p><br></p>");
+    jQuery("#txtCodigoPIE").val("");
+    jQuery("#txtDescricaoCodigoPIE").val("");
+    jQuery("#txtCodigoPATS").val("");
+    jQuery("#txtDescricaoCodigoPATS").val("");
+    jQuery("#ddlRevisaoAtual").val("0");
+    jQuery("#txtVersaoAtual").val("");
+    jQuery("#txtCSAtual").val("");
+    jQuery("#ddlNovaRevisao").val("0");
+    jQuery("#txtVersaoNovaRevisao").val("");
+    jQuery("#txtCSNovaRevisao").val("");
+    jQuery("#txtDisposicaoEstoque").val("");
+    jQuery("#ddlDisposicaoEstoqueAcao").val("0");
+    jQuery("#txtDisposicaoFornecedor").val("");
+    jQuery("#ddlDisposicaoFornecedorAcao").val("0");
+    jQuery("#txtDisposicaoEmTransito").val("");
+    jQuery("#ddlDisposicaoEmTransitoAcao").val("0");
+    jQuery("#txtHistoricoAlteracoes").val("");
+    jQuery("#dtPontoCorte-label").val("");
+
     jQuery("#modalCadastrarConjuntos").modal({ backdrop: 'static', keyboard: false });
+
+  }
+
+
+  protected async excluirConjuntoSubconjunto(id) {
+
+    if (confirm("Deseja realmente excluir o Conjunto/SubConjunto?") == true) {
+
+      const list = _web.lists.getByTitle("Conjuntos e Subconjuntos");
+      await list.items.getById(id).recycle()
+        .then(async response => {
+
+          console.log("Item excluido!");
+          jQuery("#modalSucessoExcluirConjuntoSubConjunto").modal({ backdrop: 'static', keyboard: false });
+
+
+        })
+        .catch((error: any) => {
+          console.log(error);
+
+        })
+
+
+    } else {
+
+      return false;
+    }
+
+  }
+
+  protected async abrirModalEditarConjuntoSubconjunto(ID, PIE, Title, PATS, DescricaoPATS, Atual, VersaoAtual, CSAtual, Nova, VersaoNova, CSNova, DisposicaoEstoque, DisposicaoEstoqueEscolha, DisposicaoFornecedor, DisposicaoFornecedorEscolha, DisposicaoEmtransito, DisposicaoEmtransitoEscolha, HistoricoAlteracao, PontoCorte) {
+
+    _idConjuntoSubconjunto = ID;
+    jQuery("#txtCodigoPIE-Editar").val(PIE);
+    jQuery("#txtDescricaoCodigoPIE-Editar").val(Title);
+    jQuery("#txtCodigoPATS-Editar").val(PATS);
+    jQuery("#txtDescricaoCodigoPATS-Editar").val(DescricaoPATS);
+
+    jQuery("#txtVersaoAtual-Editar").val(VersaoAtual);
+    jQuery("#txtCSAtual-Editar").val(CSAtual);
+
+    jQuery("#txtVersaoNovaRevisao-Editar").val(VersaoNova);
+    jQuery("#txtCSNovaRevisao-Editar").val(CSNova);
+    jQuery("#txtDisposicaoEstoque-Editar").val(DisposicaoEstoque);
+    jQuery("#txtDisposicaoFornecedor-Editar").val(DisposicaoFornecedor);
+    jQuery("#txtDisposicaoEmTransito-Editar").val(DisposicaoEmtransito);
+    jQuery("#txtHistoricoAlteracoes-Editar").val(HistoricoAlteracao);
+
+    if (Atual != null) {
+      jQuery("#ddlRevisaoAtual-Editar").val(Atual);
+    }
+    else {
+      jQuery("#ddlRevisaoAtual-Editar").val("0");
+    }
+
+    if (Nova != null) {
+      jQuery("#ddlNovaRevisao-Editar").val(Nova);
+    }
+    else {
+      jQuery("#ddlNovaRevisao-Editar").val("0");
+    }
+
+
+
+    
+
+    if (DisposicaoEstoqueEscolha != null) {
+      jQuery("#ddlDisposicaoEstoqueAcao-Editar").val(DisposicaoEstoqueEscolha);
+    }
+    else {
+      jQuery("#ddlDisposicaoEstoqueAcao-Editar").val("0");
+    }
+
+    if (DisposicaoFornecedorEscolha != null) {
+      jQuery("#ddlDisposicaoFornecedorAcao-Editar").val(DisposicaoFornecedorEscolha);
+    }
+    else {
+      jQuery("#ddlDisposicaoFornecedorAcao-Editar").val("0");
+    }
+
+    if (DisposicaoEmtransitoEscolha != null) {
+      jQuery("#ddlDisposicaoEmTransitoAcao-Editar").val(DisposicaoEmtransitoEscolha);
+    }
+    else {
+      jQuery("#ddlDisposicaoEmTransitoAcao-Editar").val("0");
+    }
+
+    console.log("PontoCorte", PontoCorte);
+
+    var reactPontoCorte = this;
+    var dtPontoCorte = null;
+
+    if (PontoCorte != null) {
+
+      var dataPontoCorteDia = PontoCorte.substring(0, 2);
+      var dataPontoCorteMes = PontoCorte.substring(3, 5);
+      var dataPontoCorteAno = PontoCorte.substring(6, 10);
+      var formPontoCorte = dataPontoCorteAno + "/" + dataPontoCorteMes + "/" + dataPontoCorteDia;
+
+      dtPontoCorte = new Date(formPontoCorte);
+
+    }
+
+    reactPontoCorte.setState({
+      itemsValorPontoCorte: dtPontoCorte
+    });
+
+
+    jQuery("#modalEditarConjuntoSubConjunto").modal({ backdrop: 'static', keyboard: false });
 
   }
 
@@ -2498,6 +3064,11 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     jQuery("#modalCadastrarAssistenciaTecnica").modal({ backdrop: 'static', keyboard: false });
 
   }
+
+  private onFormatDate = (date: Date): string => {
+    //return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
+    return ("0" + date.getDate()).slice(-2) + '/' + ("0" + (date.getMonth() + 1)).slice(-2) + '/' + date.getFullYear();
+  };
 
 
 }
