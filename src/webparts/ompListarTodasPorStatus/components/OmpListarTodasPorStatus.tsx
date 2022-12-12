@@ -104,9 +104,10 @@ const empTablecolumns = [
     headerStyle: { "backgroundColor": "#bee5eb", "width": "130px" },
     formatter: (rowContent, row) => {
       var id = row.ID;
+      var numero = row.Numero;
       var status = row.Status
-      var urlDetalhes = `OMP-Detalhes.aspx?DocumentoID=` + id;
-      var urlEditar = `OMP-Editar.aspx?DocumentoID=` + id;
+      var urlDetalhes = `OMP-Detalhes.aspx?DocumentoID=${id}&DocumentoNumero=${numero}`;
+      var urlEditar = `OMP-Editar.aspx?DocumentoID=${id}&DocumentoNumero=${numero}`;
 
       return (
         <>

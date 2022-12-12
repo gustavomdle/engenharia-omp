@@ -33,6 +33,7 @@ var _solucaoEncontrada = "";
 var _alteracoes = "";
 var _documentosAlterados = "";
 var _idOMP;
+var _numeroOMP;
 
 export interface IReactGetItemsState {
 
@@ -836,6 +837,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
 
                 console.log("Gravou OMP!!");
                 _idOMP = response.data.ID;
+                _numeroOMP = response.data.ID;
 
                 await _web.lists
                   .getByTitle("Controle da numeração")
@@ -960,8 +962,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
   protected async fecharSucesso() {
 
     jQuery("#modalSucesso").modal('hide');
-    window.location.href = `OMP-Editar.aspx?DocumentoID=` + _idOMP;
-
+    window.location.href = `OMP-Editar.aspx?DocumentoID=${_idOMP}&DocumentoNumero=${_numeroOMP}`;
   }
 
 

@@ -93,6 +93,7 @@ export interface IReactGetItemsState {
   itemsPontoCorte: [],
   itemsAssistenciaTecnica: [],
   itemsAprovacoes: [],
+  itemsListaBITRelacionado: [],
   itemsListAnexosItem: [
     {
       "FileName": any,
@@ -118,7 +119,7 @@ const tablecolumnsPontoCorte = [
     headerStyle: { "backgroundColor": "#bee5eb", "width": "100px" },
   },
   {
-    dataField: "PIE.ID",
+    dataField: "PIE.PIE",
     text: "Código PIE",
     classes: 'text-center',
     headerClasses: 'text-center',
@@ -138,33 +139,70 @@ const tablecolumnsPontoCorte = [
     classes: 'text-center',
     formatter: (rowContent, row) => {
       var data = new Date(row.Data);
-      var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear().toString().substr(-2) + ' ' + ("0" + (data.getHours())).slice(-2) + ':' + ("0" + (data.getMinutes())).slice(-2);
+      var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear().toString();
       return dtdata;
     }
   },
+  {
+    dataField: "Modified",
+    text: "Data de modificação",
+    headerStyle: { "backgroundColor": "#bee5eb" },
+    classes: 'headerPreStage text-center',
+    headerClasses: 'text-center',
+    formatter: (rowContent, row) => {
+      var dataModificado = new Date(row.Modified);
+      var dtdataModificado = ("0" + dataModificado.getDate()).slice(-2) + '/' + ("0" + (dataModificado.getMonth() + 1)).slice(-2) + '/' + dataModificado.getFullYear().toString().substr(-2) + '<br/>' + ("0" + (dataModificado.getHours())).slice(-2) + ':' + ("0" + (dataModificado.getMinutes())).slice(-2);
+      //return dtdataCriacao;
+      return <div dangerouslySetInnerHTML={{ __html: `${dtdataModificado}` }} />;
+    }
+  },
+  {
+    dataField: "Editor.Title",
+    classes: 'headerPreStage',
+    text: "Modificado por",
+    headerStyle: { "backgroundColor": "#bee5eb" },
+    headerClasses: 'text-center',
+  },
+
 
 ]
 
 
 const tablecolumnsAssistenciaTecnica = [
   {
-    dataField: "OMP.ID",
-    text: "OMP",
-    headerClasses: 'text-center',
-    classes: 'text-center',
-    headerStyle: { backgroundColor: '#bee5eb' },
-  },
-  {
-    dataField: "PIE.ID",
+    dataField: "PIE.PIE",
     text: "Código PIE",
     classes: 'text-center',
     headerClasses: 'text-center',
     headerStyle: { backgroundColor: '#bee5eb' },
+    formatter: (rowContent, row) => {
+
+      console.log("row PIE.PIE 2", row.PIE.PIE);
+
+      var pie = row.PIE.PIE;
+      console.log("pie", pie);
+      var valor = "";
+      if (pie != 0) valor = pie;
+      return valor;
+    }
   },
   {
-    dataField: "PATS.ID",
+    dataField: "PATS.PATS",
     text: "Código PATS",
     classes: 'text-center',
+    headerClasses: 'text-center',
+    headerStyle: { backgroundColor: '#bee5eb' },
+    formatter: (rowContent, row) => {
+      var pats = row.PATS.PATS;
+      console.log("PATS", pats);
+      var valor = "";
+      if (pats != 0) valor = pats;
+      return valor;
+    }
+  },
+  {
+    dataField: "Title",
+    text: "Observação",
     headerClasses: 'text-center',
     headerStyle: { backgroundColor: '#bee5eb' },
   },
@@ -176,13 +214,13 @@ const tablecolumnsAssistenciaTecnica = [
     classes: 'text-center',
     formatter: (rowContent, row) => {
       var data = new Date(row.DataEntrega);
-      var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear().toString().substr(-2) + ' ' + ("0" + (data.getHours())).slice(-2) + ':' + ("0" + (data.getMinutes())).slice(-2);
+      var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear().toString();
       return dtdata;
     }
   },
   {
     dataField: "Modified",
-    text: "Data de criação",
+    text: "Data de modificação",
     headerStyle: { "backgroundColor": "#bee5eb" },
     classes: 'headerPreStage text-center',
     headerClasses: 'text-center',
@@ -229,6 +267,38 @@ const tablecolumnsAprovacoes = [
       return dtdata;
     }
   },
+]
+
+
+const tablecolumnsBITRelacionado = [
+  {
+    dataField: "Title",
+    text: "BIT relacionado",
+    classes: 'text-center',
+    headerClasses: 'text-center',
+    headerStyle: { backgroundColor: '#bee5eb' },
+  },
+  {
+    dataField: "Modified",
+    text: "Data de modificação",
+    headerStyle: { "backgroundColor": "#bee5eb" },
+    classes: 'headerPreStage text-center',
+    headerClasses: 'text-center',
+    formatter: (rowContent, row) => {
+      var dataModificado = new Date(row.Modified);
+      var dtdataModificado = ("0" + dataModificado.getDate()).slice(-2) + '/' + ("0" + (dataModificado.getMonth() + 1)).slice(-2) + '/' + dataModificado.getFullYear().toString().substr(-2) + '<br/>' + ("0" + (dataModificado.getHours())).slice(-2) + ':' + ("0" + (dataModificado.getMinutes())).slice(-2);
+      //return dtdataCriacao;
+      return <div dangerouslySetInnerHTML={{ __html: `${dtdataModificado}` }} />;
+    }
+  },
+  {
+    dataField: "Editor.Title",
+    classes: 'headerPreStage',
+    text: "Modificado por",
+    headerStyle: { "backgroundColor": "#bee5eb" },
+    headerClasses: 'text-center',
+  },
+
 ]
 
 export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IReactGetItemsState> {
@@ -285,6 +355,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
       itemsPontoCorte: [],
       itemsAssistenciaTecnica: [],
       itemsAprovacoes: [],
+      itemsListaBITRelacionado: [],
       itemsListAnexosItem: [
         {
           "FileName": "",
@@ -306,6 +377,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
     _web = new Web(this.props.context.pageContext.web.absoluteUrl);
     var queryParms = new UrlQueryParameterCollection(window.location.href);
     _idOMP = parseInt(queryParms.getValue("DocumentoID"));
+    _documentoNumero = parseInt(queryParms.getValue("DocumentoNumero"));
 
     document
       .getElementById("btnEditar")
@@ -494,7 +566,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
                         var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Anexos')/items('${_idOMP}')/AttachmentFiles`;
                         url = this.props.siteurl;
 
-                        var caminho = `${url}/Lists/Anexos/Attachments/${_idOMP}/${item.FileName}`;
+                        var caminho = `${url}/Lists/Documentos/Attachments/${_idOMP}/${item.FileName}`;
 
                         return (
 
@@ -512,7 +584,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
                         var txtAnexoItem = "anexoItem" + _pos;
                         var btnExcluirAnexoitem = "btnExcluirAnexoitem" + _pos;
 
-                        var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Anexos')/items('${_idOMP}')/AttachmentFiles`;
+                        var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Anexos')/items('${_documentoNumero}')/AttachmentFiles`;
                         url = this.props.siteurl;
 
                         var caminho = item.ServerRelativeUrl;
@@ -888,6 +960,22 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
           </div>
 
           <div className="card">
+            <div className="card-header btn" id="headingBITRelacionado" data-toggle="collapse" data-target="#collapseBITRelacionado" aria-expanded="true" aria-controls="collapseBITRelacionado">
+              <h5 className="mb-0 text-info">
+                BIT relacionado
+              </h5>
+            </div>
+            <div id="collapseBITRelacionado" className="collapse show" aria-labelledby="headingOne">
+              <div className="card-body">
+                <div id='tabelaBITRelacionado'>
+                  <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItensBITRelacionado" keyField='id' data={this.state.itemsListaBITRelacionado} columns={tablecolumnsBITRelacionado} headerClasses="header-class" />
+                  <button id='btnAbrirBITRelacionado' className="btn btn-secondary btnCustom btn-sm">Adicionar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
             <div className="card-header btn" id="headingAprovacoes" data-toggle="collapse" data-target="#collapseAprovacoes" aria-expanded="true" aria-controls="collapseAprovacoes">
               <h5 className="mb-0 text-info">
                 Aprovações
@@ -944,12 +1032,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
           for (var i = 0; i < resultData.d.results.length; i++) {
 
             var numero = resultData.d.results[i].Numero;
-            _documentoNumero = numero;
-
-            console.log("_documentoNumero", _documentoNumero);
-
             var status = resultData.d.results[i].Status;
-
             var sintese = resultData.d.results[i].Title;
             var tipo = resultData.d.results[i].TipoOMP;
             var objetivo = resultData.d.results[i].Objetivo;
@@ -962,7 +1045,6 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
             var alteracoes = resultData.d.results[i].Alteracoes;
             var documentosAlterados = resultData.d.results[i].DocumentosAlterados;
             var documentosOrigem = resultData.d.results[i].DocumentosOrigem;
-
             var itemNovo = resultData.d.results[i].siteNovoSPOnline;
 
             if (itemNovo == "Sim") {
@@ -985,7 +1067,6 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
 
             jQuery("#txtNro").html(numero);
             jQuery("#txtStatus").html(status);
-
             jQuery("#txtSintese").html(sintese);
             jQuery("#txtTipo").html(tipo);
             jQuery("#txtObjetivo").html(objetivo);
@@ -1003,9 +1084,6 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
             jQuery("#txtAreaExecutoraFabrica").html(areaExecutoraFabrica);
             jQuery("#txtAreaExecutoraAT").html(areaExecutoraAT);
 
-
-
-
           }
 
         }
@@ -1019,7 +1097,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
     var reactItemsConjuntos = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Conjunto' and OMP/ID eq ` + _idOMP,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=OMP/ID eq ${_idOMP} and Conjuntos eq 'Conjunto'`,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -1035,7 +1113,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
     var reactItemsSubConjuntos = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Subconjunto' and OMP/ID eq ` + _idOMP,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=OMP/ID eq ${_idOMP} and Conjuntos eq 'Subconjunto'`,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -1051,7 +1129,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
     var reactItemsPontoCorte = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Ponto de Corte')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,Data&$expand=OMP,PIE&$filter=OMP/ID eq ` + _idOMP,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Ponto de Corte')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/PIE,PIE/ID,Data,Modified,Editor/Title&$expand=OMP,PIE,Editor&$filter=OMP/Numero eq ` + _documentoNumero,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -1069,7 +1147,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
     var reactItemsInforAssistenciaTecnica = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Materiais')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,PATS/ID,DataEntrega,Modified,Editor/Title&$expand=OMP,PIE,PATS,Editor&$filter=OMP/ID eq ` + _idOMP,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Materiais')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,PATS/ID,DataEntrega,Modified,Editor/Title,PIE/PIE,PATS/PATS&$expand=OMP,PIE,PATS,Editor&$filter=OMP/Numero eq ` + _documentoNumero,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -1082,6 +1160,26 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
         console.log(jqXHR.responseText);
       }
     });
+
+    var reactItemsBITRelacionado = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('BIT relacionado')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,Modified,Editor/Title&$expand=OMP,Editor&$filter=OMP/Numero eq ` + _documentoNumero,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+
+        console.log("resultData bit relacionado", resultData);
+
+        reactItemsBITRelacionado.setState({
+          itemsListaBITRelacionado: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
 
     var reactItemsAprovacoes = this;
 
@@ -1149,7 +1247,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
 
     console.log("strRelativeURL", strRelativeURL);
 
-    await _web.getFolderByServerRelativeUrl(`${strRelativeURL}/Anexos/${_idOMP}`).files.orderBy('TimeLastModified', true)
+    await _web.getFolderByServerRelativeUrl(`${strRelativeURL}/Anexos/${_documentoNumero}`).files.orderBy('TimeLastModified', true)
 
       .expand('ListItemAllFields', 'Author').get().then(r => {
 
@@ -1170,7 +1268,7 @@ export default class OmpDetalhes extends React.Component<IOmpDetalhesProps, IRea
 
 
   protected editar() {
-    window.location.href = `OMP-Editar.aspx?DocumentoID=` + _idOMP;
+    window.location.href = `OMP-Editar.aspx?DocumentoID=${_idOMP}&DocumentoNumero=${_documentoNumero}`;
   }
 
   protected voltar() {

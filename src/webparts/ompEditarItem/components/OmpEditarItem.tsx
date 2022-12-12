@@ -45,7 +45,9 @@ var _pos = 0;
 var _pos2 = 0;
 var _pastaCriada;
 var _idConjunto;
-
+var _idPontoCorte;
+var _idAssistenciaTecnica;
+var _idBITRelacionado;
 
 export interface IReactGetItemsState {
 
@@ -55,6 +57,7 @@ export interface IReactGetItemsState {
   itemsProducao: [];
   itemsAssistenciaTecnica: [];
   itemsListaAssistenciaTecnica: [],
+  itemsListaBITRelacionado: [],
   itemsPontoCorte: [],
   itemsRevisaoAtual: [],
   itemsNovaRevisao: [],
@@ -72,6 +75,15 @@ export interface IReactGetItemsState {
       "Title": any,
       "PIE": any,
     }],
+  itemsPATS: [
+    {
+      "ID": any,
+      "Title": any,
+      "PATS": any,
+    }],
+
+
+
   valorItemsTipo: [],
   valorItemsObjetivo: [],
   valorItemsDivisaoImpressora: [],
@@ -139,106 +151,21 @@ export interface IReactGetItemsState {
   itemsValorPontoCorteConjuntos: any,
   itemsValorPontoCorteSubConjuntos: any,
   itemsDataPontoCorte: any,
+  valorItemsPIEPontoCorteEditar: any,
+  valorItemsDataPontoCorteEditar: any,
+  valorItemsDataEntregaAssistenciaTecnica: any,
+  valorItemsPIEAssistenciaTecnica: any,
+  valorItemsPATSAssistenciaTecnica: any,
 
 }
 
-const tablecolumnsPontoCorte = [
-  {
-    dataField: "OMP.ID",
-    text: "OMP",
-    headerClasses: 'text-center',
-    classes: 'text-center',
-    headerStyle: { "backgroundColor": "#bee5eb", "width": "100px" },
-  },
-  {
-    dataField: "PIE.ID",
-    text: "Código PIE",
-    classes: 'text-center',
-    headerClasses: 'text-center',
-    headerStyle: { "backgroundColor": "#bee5eb", "width": "100px" },
-  },
-  {
-    dataField: "Title",
-    text: "Observação",
-    headerClasses: 'text-center',
-    headerStyle: { backgroundColor: '#bee5eb' },
-  },
-  {
-    dataField: "Data",
-    text: "Data",
-    headerClasses: 'text-center',
-    headerStyle: { "backgroundColor": "#bee5eb", "width": "200px" },
-    classes: 'text-center',
-    formatter: (rowContent, row) => {
-      var data = new Date(row.Data);
-      var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear().toString().substr(-2) + ' ' + ("0" + (data.getHours())).slice(-2) + ':' + ("0" + (data.getMinutes())).slice(-2);
-      return dtdata;
-    }
-  },
-
-]
-
-
-const tablecolumnsAssistenciaTecnica = [
-  {
-    dataField: "OMP.ID",
-    text: "OMP",
-    headerClasses: 'text-center',
-    classes: 'text-center',
-    headerStyle: { backgroundColor: '#bee5eb' },
-  },
-  {
-    dataField: "PIE.ID",
-    text: "Código PIE",
-    classes: 'text-center',
-    headerClasses: 'text-center',
-    headerStyle: { backgroundColor: '#bee5eb' },
-  },
-  {
-    dataField: "PATS.ID",
-    text: "Código PATS",
-    classes: 'text-center',
-    headerClasses: 'text-center',
-    headerStyle: { backgroundColor: '#bee5eb' },
-  },
-  {
-    dataField: "DataEntrega",
-    text: "Data de entrega do material",
-    headerClasses: 'text-center',
-    headerStyle: { backgroundColor: '#bee5eb' },
-    classes: 'text-center',
-    formatter: (rowContent, row) => {
-      var data = new Date(row.DataEntrega);
-      var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear().toString().substr(-2) + ' ' + ("0" + (data.getHours())).slice(-2) + ':' + ("0" + (data.getMinutes())).slice(-2);
-      return dtdata;
-    }
-  },
-  {
-    dataField: "Modified",
-    text: "Data de criação",
-    headerStyle: { "backgroundColor": "#bee5eb" },
-    classes: 'headerPreStage text-center',
-    headerClasses: 'text-center',
-    formatter: (rowContent, row) => {
-      var dataModificado = new Date(row.Modified);
-      var dtdataModificado = ("0" + dataModificado.getDate()).slice(-2) + '/' + ("0" + (dataModificado.getMonth() + 1)).slice(-2) + '/' + dataModificado.getFullYear().toString().substr(-2) + '<br/>' + ("0" + (dataModificado.getHours())).slice(-2) + ':' + ("0" + (dataModificado.getMinutes())).slice(-2);
-      //return dtdataCriacao;
-      return <div dangerouslySetInnerHTML={{ __html: `${dtdataModificado}` }} />;
-    }
-  },
-  {
-    dataField: "Editor.Title",
-    classes: 'headerPreStage',
-    text: "Modificado por",
-    headerStyle: { "backgroundColor": "#bee5eb" },
-    headerClasses: 'text-center',
-  },
-]
-
-
 export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, IReactGetItemsState> {
 
+
+
   public constructor(props: IOmpEditarItemProps, state: IReactGetItemsState) {
+
+
     super(props);
     this.state = {
 
@@ -248,6 +175,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       itemsProducao: [],
       itemsAssistenciaTecnica: [],
       itemsListaAssistenciaTecnica: [],
+      itemsListaBITRelacionado: [],
       itemsPontoCorte: [],
       itemsRevisaoAtual: [],
       itemsNovaRevisao: [],
@@ -264,6 +192,12 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
           "ID": "",
           "Title": "",
           "PIE": "",
+        }],
+      itemsPATS: [
+        {
+          "ID": "",
+          "Title": "",
+          "PATS": "",
         }],
       valorItemsTipo: [],
       valorItemsObjetivo: [],
@@ -333,7 +267,12 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       ],
       itemsValorPontoCorteConjuntos: "",
       itemsValorPontoCorteSubConjuntos: "",
+      valorItemsPIEPontoCorteEditar: "",
       itemsDataPontoCorte: "",
+      valorItemsDataPontoCorteEditar: "",
+      valorItemsDataEntregaAssistenciaTecnica: "",
+      valorItemsPIEAssistenciaTecnica: "",
+      valorItemsPATSAssistenciaTecnica: "",
 
     };
   }
@@ -349,8 +288,9 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
     var queryParms = new UrlQueryParameterCollection(window.location.href);
     _idOMP = parseInt(queryParms.getValue("DocumentoID"));
+    _documentoNumero = parseInt(queryParms.getValue("DocumentoNumero"));
 
-    //jQuery("#modalCadastrarConjuntos").modal({ backdrop: 'static', keyboard: false });
+    //jQuery("#modalCadastrarAssistenciaTecnica").modal({ backdrop: 'static', keyboard: false });
 
     document
       .getElementById("btnValidarSalvar")
@@ -381,6 +321,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       .addEventListener("click", (e: Event) => this.abrirModalCadastrarAssistenciaTecnica());
 
     document
+      .getElementById("btnAbrirBITRelacionado")
+      .addEventListener("click", (e: Event) => this.abrirModalCadastrarBITRelacionado());
+
+    document
       .getElementById("btnCadastrarConjunto")
       .addEventListener("click", (e: Event) => this.cadastrarConjuntosSubconjuntos("Conjunto"));
 
@@ -391,6 +335,28 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     document
       .getElementById("btnCadastrarPontoCorte")
       .addEventListener("click", (e: Event) => this.cadastrarPontoCorte());
+
+    document
+      .getElementById("btnCadastrarAssistenciaTecnica")
+      .addEventListener("click", (e: Event) => this.cadastrarAssistenciaTecnica());
+
+    document
+      .getElementById("btnCadastrarBITRelacionado")
+      .addEventListener("click", (e: Event) => this.cadastrarBITRelacionado());
+
+    document
+      .getElementById("btnEditarBITRelacionado")
+      .addEventListener("click", (e: Event) => this.editarBITRelacionado());
+
+    document
+      .getElementById("btnEditarAssistenciaTecnica")
+      .addEventListener("click", (e: Event) => this.editarAssistenciaTecnica());
+
+
+    document
+      .getElementById("btnEditarPontoCorte")
+      .addEventListener("click", (e: Event) => this.editarPontoCorte());
+
 
     document
       .getElementById("btnSucessoCadastrarConjunto")
@@ -407,6 +373,46 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     document
       .getElementById("btnSucessoExcluirSubConjunto")
       .addEventListener("click", (e: Event) => this.sucessoSubConjuntos("Excluir"));
+
+    document
+      .getElementById("btnSucessoExcluirPontoCorte")
+      .addEventListener("click", (e: Event) => this.sucessoPontoCorte("Excluir"));
+
+    document
+      .getElementById("btnSucessoExcluirAssistenciaTecnica")
+      .addEventListener("click", (e: Event) => this.sucessoAssistenciaTecnica("Excluir"));
+
+    document
+      .getElementById("btnSucessoExcluirBITRelacionado")
+      .addEventListener("click", (e: Event) => this.sucessoBITRelacionado("Excluir"));
+
+    document
+      .getElementById("btnSucessoCadastrarPontoCorte")
+      .addEventListener("click", (e: Event) => this.sucessoPontoCorte("Salvar"));
+
+    document
+      .getElementById("btnSucessoCadastrarAssistenciaTecnica")
+      .addEventListener("click", (e: Event) => this.sucessoAssistenciaTecnica("Salvar"));
+
+    document
+      .getElementById("btnSucessoCadastrarBITRelacionado")
+      .addEventListener("click", (e: Event) => this.sucessoBITRelacionado("Salvar"));
+
+    document
+      .getElementById("btnSucessoEditarBITRelacionado")
+      .addEventListener("click", (e: Event) => this.sucessoBITRelacionado("Editar"));
+
+    document
+      .getElementById("btnSucessoEditarAssistenciaTecnica")
+      .addEventListener("click", (e: Event) => this.sucessoAssistenciaTecnica("Editar"));
+
+    document
+      .getElementById("modalEditarAssistenciaTecnica")
+      .addEventListener("click", (e: Event) => this.sucessoAssistenciaTecnica("Editar"));
+
+    document
+      .getElementById("btnSucessoEditarPontoCorte")
+      .addEventListener("click", (e: Event) => this.sucessoPontoCorte("Editar"));
 
     document
       .getElementById("btnEditarConjunto")
@@ -437,16 +443,336 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
   public render(): React.ReactElement<IOmpEditarItemProps> {
 
-    const MaskedInput = (props) => {
-      // Defining custom masking characters
-      // P will match P or K
-      // 0 (zero) will match even digits
-      const formatChars = {
-        'P': '[PK]',
-        '0': '[02468]'
-      };
+    const tablecolumnsPontoCorte = [
+      {
+        dataField: "OMP.ID",
+        text: "OMP",
+        headerClasses: 'text-center',
+        classes: 'text-center',
+        headerStyle: { "backgroundColor": "#bee5eb", "width": "100px" },
+      },
+      {
+        dataField: "PIE.PIE",
+        text: "Código PIE",
+        classes: 'text-center',
+        headerClasses: 'text-center',
+        headerStyle: { "backgroundColor": "#bee5eb", "width": "100px" },
+      },
+      {
+        dataField: "Title",
+        text: "Observação",
+        headerClasses: 'text-center',
+        headerStyle: { backgroundColor: '#bee5eb' },
+      },
+      {
+        dataField: "Data",
+        text: "Data",
+        headerClasses: 'text-center',
+        headerStyle: { "backgroundColor": "#bee5eb", "width": "200px" },
+        classes: 'text-center',
+        formatter: (rowContent, row) => {
+          var data = new Date(row.Data);
+          var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear().toString();
+          return dtdata;
+        }
+      },
+      {
+        dataField: "Modified",
+        text: "Data de modificação",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage text-center',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var dataModificado = new Date(row.Modified);
+          var dtdataModificado = ("0" + dataModificado.getDate()).slice(-2) + '/' + ("0" + (dataModificado.getMonth() + 1)).slice(-2) + '/' + dataModificado.getFullYear().toString().substr(-2) + '<br/>' + ("0" + (dataModificado.getHours())).slice(-2) + ':' + ("0" + (dataModificado.getMinutes())).slice(-2);
+          //return dtdataCriacao;
+          return <div dangerouslySetInnerHTML={{ __html: `${dtdataModificado}` }} />;
+        }
+      },
+      {
+        dataField: "Editor.Title",
+        classes: 'headerPreStage',
+        text: "Modificado por",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "",
+        text: "",
+        headerStyle: { "backgroundColor": "#bee5eb", "width": "128px" },
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
 
-    }
+          var id = row.ID;
+
+          return (
+            <>
+              <button onClick={async () => {
+
+                if (confirm("Deseja realmente excluir o item: " + row.Title + "?") == true) {
+
+                  const list = _web.lists.getByTitle("Ponto de Corte");
+                  await list.items.getById(id).recycle()
+                    .then(async response => {
+
+                      console.log("Item excluido!");
+                      jQuery("#modalSucessoExcluirPontoCorte").modal({ backdrop: 'static', keyboard: false });
+
+                    })
+                    .catch((error: any) => {
+                      console.log(error);
+
+                    })
+
+                } else {
+
+                  return false.valueOf;
+                }
+
+              }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Excluir</button>&nbsp;
+              <button onClick={() => {
+
+                jQuery("#txtObservacao-PontoCorte-Editar").val(row.Title);
+
+                var reactCodigoPIEPontoCorteEditar = this;
+
+                var data = new Date(row.Data);
+                var formdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+
+                _idPontoCorte = row.ID;
+
+                reactCodigoPIEPontoCorteEditar.setState({
+                  valorItemsPIEPontoCorteEditar: row.PIE.ID,
+                  valorItemsDataPontoCorteEditar: formdata
+                });
+
+                jQuery("#dtData-PontoCorte-Editar").val(formdata);
+                jQuery("#txtObservacao-PontoCorte-Editar").val(row.Title);
+
+                jQuery("#modalEditarPontoCorte").modal({ backdrop: 'static', keyboard: false })
+
+              }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Editar</button>
+
+
+            </>
+          )
+
+        }
+      }
+
+    ]
+
+    const tablecolumnsAssistenciaTecnica = [
+      {
+        dataField: "PIE.PIE",
+        text: "Código PIE",
+        classes: 'text-center',
+        headerClasses: 'text-center',
+        headerStyle: { backgroundColor: '#bee5eb' },
+        formatter: (rowContent, row) => {
+
+          var pie = row.PIE.PIE;
+          var valor = "";
+          if (pie != 0) valor = pie;
+          return valor;
+        }
+      },
+      {
+        dataField: "PATS.PATS",
+        text: "Código PATS",
+        classes: 'text-center',
+        headerClasses: 'text-center',
+        headerStyle: { backgroundColor: '#bee5eb' },
+        formatter: (rowContent, row) => {
+          var pats = row.PATS.PATS;
+          var valor = "";
+          if (pats != 0) valor = pats;
+          return valor;
+        }
+      },
+      {
+        dataField: "Title",
+        text: "Observação",
+        headerClasses: 'text-center',
+        headerStyle: { backgroundColor: '#bee5eb' },
+      },
+      {
+        dataField: "DataEntrega",
+        text: "Data de entrega do material",
+        headerClasses: 'text-center',
+        headerStyle: { backgroundColor: '#bee5eb' },
+        classes: 'text-center',
+        formatter: (rowContent, row) => {
+          var data = new Date(row.DataEntrega);
+          var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear().toString();
+          return dtdata;
+        }
+      },
+      {
+        dataField: "Modified",
+        text: "Data de modificação",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage text-center',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var dataModificado = new Date(row.Modified);
+          var dtdataModificado = ("0" + dataModificado.getDate()).slice(-2) + '/' + ("0" + (dataModificado.getMonth() + 1)).slice(-2) + '/' + dataModificado.getFullYear().toString().substr(-2) + '<br/>' + ("0" + (dataModificado.getHours())).slice(-2) + ':' + ("0" + (dataModificado.getMinutes())).slice(-2);
+          //return dtdataCriacao;
+          return <div dangerouslySetInnerHTML={{ __html: `${dtdataModificado}` }} />;
+        }
+      },
+      {
+        dataField: "Editor.Title",
+        classes: 'headerPreStage',
+        text: "Modificado por",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "",
+        text: "",
+        headerStyle: { "backgroundColor": "#bee5eb", "width": "128px" },
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+
+          var id = row.ID;
+
+          return (
+            <>
+              <button onClick={async () => {
+
+                if (confirm("Deseja realmente excluir o item: " + row.Title + "?") == true) {
+
+                  const list = _web.lists.getByTitle("Materiais");
+                  await list.items.getById(id).recycle()
+                    .then(async response => {
+
+                      console.log("Item excluido!");
+                      jQuery("#modalSucessoExcluirAssistenciaTecnica").modal({ backdrop: 'static', keyboard: false });
+
+                    })
+                    .catch((error: any) => {
+                      console.log(error);
+
+                    })
+
+                } else {
+
+                  return false.valueOf;
+                }
+
+              }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Excluir</button>&nbsp;
+              <button onClick={() => {
+
+                jQuery("#txtObservacao-AssistenciaTecnica-Editar").val(row.Title);
+
+                var reactCodigoPIEAssistenciaTecnicaEditar = this;
+                _idAssistenciaTecnica = row.ID;
+
+                var data = new Date(row.DataEntrega);
+                var formdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+
+                reactCodigoPIEAssistenciaTecnicaEditar.setState({
+                  valorItemsPIEAssistenciaTecnica: row.PIE.ID,
+                  valorItemsPATSAssistenciaTecnica: row.PATS.ID,
+                  valorItemsDataEntregaAssistenciaTecnica: formdata
+                });
+
+                jQuery("#dtData-PontoCorte-Editar").val(formdata);
+                jQuery("#txtObservacao-PontoCorte-Editar").val(row.Title);
+
+                jQuery("#modalEditarAssistenciaTecnica").modal({ backdrop: 'static', keyboard: false })
+
+
+
+              }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Editar</button>
+
+
+            </>
+          )
+
+        }
+      }
+    ]
+
+
+    const tablecolumnsBITRelacionado = [
+      {
+        dataField: "Title",
+        text: "BIT relacionado",
+        classes: 'text-center',
+        headerClasses: 'text-center',
+        headerStyle: { backgroundColor: '#bee5eb' },
+      },
+      {
+        dataField: "Modified",
+        text: "Data de modificação",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage text-center',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var dataModificado = new Date(row.Modified);
+          var dtdataModificado = ("0" + dataModificado.getDate()).slice(-2) + '/' + ("0" + (dataModificado.getMonth() + 1)).slice(-2) + '/' + dataModificado.getFullYear().toString().substr(-2) + '<br/>' + ("0" + (dataModificado.getHours())).slice(-2) + ':' + ("0" + (dataModificado.getMinutes())).slice(-2);
+          //return dtdataCriacao;
+          return <div dangerouslySetInnerHTML={{ __html: `${dtdataModificado}` }} />;
+        }
+      },
+      {
+        dataField: "Editor.Title",
+        classes: 'headerPreStage',
+        text: "Modificado por",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "",
+        text: "",
+        headerStyle: { "backgroundColor": "#bee5eb", "width": "128px" },
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+
+          var id = row.ID;
+          _idBITRelacionado = id;
+
+          return (
+            <>
+              <button onClick={async () => {
+
+                if (confirm("Deseja realmente excluir o item: " + row.Title + "?") == true) {
+
+                  const list = _web.lists.getByTitle("BIT relacionado");
+                  await list.items.getById(id).recycle()
+                    .then(async response => {
+
+                      console.log("Item excluido!");
+                      jQuery("#modalSucessoExcluirBITRelacionado").modal({ backdrop: 'static', keyboard: false });
+
+                    })
+                    .catch((error: any) => {
+                      console.log(error);
+
+                    })
+
+                } else {
+
+                  return false.valueOf;
+                }
+
+              }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Excluir</button>&nbsp;
+              <button onClick={() => {
+
+                jQuery("#txtBITRelacionado-Editar").val(row.Title);
+                jQuery("#modalEditarBITRelacionado").modal({ backdrop: 'static', keyboard: false })
+
+              }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Editar</button>
+
+
+            </>
+          )
+
+        }
+      }
+    ]
 
     return (
 
@@ -550,9 +876,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                     <div className="form-group col-md">
                       <label htmlFor="checkAssitenciaTecnica">Assistência técnica</label><span className="required"> *</span>
                       {this.state.itemsAssistenciaTecnica.map((item, key) => {
-
-                        console.log("_assistenciaTecnica", _assistenciaTecnica);
-                        console.log("item", item);
 
                         return (
 
@@ -1050,82 +1373,21 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             </div>
           </div>
 
-
           <div className="card">
-            <div className="card-header btn" id="headingAprovadores" data-toggle="collapse" data-target="#collapseAprovadores" aria-expanded="true" aria-controls="collapseAprovadores">
+            <div className="card-header btn" id="headingBITRelacionado" data-toggle="collapse" data-target="#collapseBITRelacionado" aria-expanded="true" aria-controls="collapseBITRelacionado">
               <h5 className="mb-0 text-info">
-                Aprovadores
+                BIT relacionado
               </h5>
             </div>
-            <div id="collapseAprovadores" className="collapse show" aria-labelledby="headingOne">
+            <div id="collapseBITRelacionado" className="collapse show" aria-labelledby="headingOne">
               <div className="card-body">
-
-                <div className="form-group">
-                  <div className="form-row">
-                    <div className="form-group col-md">
-                      <label htmlFor="ddlResponsavelTecnico">Responsável Técnico</label><span className="required"> *</span>
-
-                      <select id="ddlResponsavelTecnico" className="form-control" value={this.state.valorResponsavelTecnico} onChange={(e) => this.onChangeResponsavelTecnico(e.target.value)}>
-                        <option value="0" selected>Selecione...</option>
-                        {this.state.itemsAprovadores.map(function (item, key) {
-                          return (
-                            <option value={item.Id}>{item.Title}</option>
-                          );
-                        })}
-                      </select>
-
-                    </div>
-                    <div className="form-group col-md">
-                      <label htmlFor="ddlResponsavelArea">Responsável da área</label><span className="required"> *</span>
-
-                      <select id="ddlResponsavelArea" className="form-control" value={this.state.valorResponsavelArea} onChange={(e) => this.onChangeResponsavelArea(e.target.value)}>
-                        <option value="0" selected>Selecione...</option>
-                        {this.state.itemsAprovadores.map(function (item, key) {
-                          return (
-                            <option value={item.Id}>{item.Title}</option>
-                          );
-                        })}
-                      </select>
-
-                    </div>
-                  </div>
+                <div id='tabelaBITRelacionado'>
+                  <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItensBITRelacionado" keyField='id' data={this.state.itemsListaBITRelacionado} columns={tablecolumnsBITRelacionado} headerClasses="header-class" />
+                  <button id='btnAbrirBITRelacionado' className="btn btn-secondary btnCustom btn-sm">Adicionar</button>
                 </div>
-
-                <div className="form-group">
-                  <div className="form-row">
-                    <div className="form-group col-md">
-                      <label htmlFor="ddlAreaExecutoraFabrica">Área executora fábrica</label><span className="required"> *</span>
-
-                      <select id="ddlAreaExecutoraFabrica" className="form-control" value={this.state.valorAreaExecutoraFabrica} onChange={(e) => this.onChangeAreaExecutoraFabrica(e.target.value)}>
-                        <option value="0" selected>Selecione...</option>
-                        {this.state.itemsAprovadores.map(function (item, key) {
-                          return (
-                            <option value={item.Id}>{item.Title}</option>
-                          );
-                        })}
-                      </select>
-
-                    </div>
-                    <div className="form-group col-md">
-                      <label htmlFor="ddlAreaExecutoraAT">Área executora AT</label><span className="required"> *</span>
-
-                      <select id="ddlAreaExecutoraAT" className="form-control" value={this.state.valorAreaExecutoraAT} onChange={(e) => this.onChangeAreaExecutoraAT(e.target.value)}>
-                        <option value="0" selected>Selecione...</option>
-                        {this.state.itemsAprovadores.map(function (item, key) {
-                          return (
-                            <option value={item.Id}>{item.Title}</option>
-                          );
-                        })}
-                      </select>
-
-                    </div>
-                  </div>
-                </div>
-
               </div>
             </div>
           </div>
-
 
           <div className="card">
             <div className="card-header btn" id="headingAnexos" data-toggle="collapse" data-target="#collapseAnexos" aria-expanded="true" aria-controls="collapseAnexos">
@@ -1158,10 +1420,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                         var txtAnexoItem = "anexoItem" + _pos;
                         var btnExcluirAnexoitem = "btnExcluirAnexoitem" + _pos;
 
-                        var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Anexos')/items('${_idOMP}')/AttachmentFiles`;
+                        var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Anexos')/items('${_documentoNumero}')/AttachmentFiles`;
                         url = this.props.siteurl;
 
-                        var caminho = `${url}/Lists/Anexos/Attachments/${_idOMP}/${item.FileName}`;
+                        var caminho = `${url}/Lists/Documentos/Attachments/${_idOMP}/${item.FileName}`;
 
                         return (
 
@@ -1179,7 +1441,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                         var txtAnexoItem = "anexoItem" + _pos;
                         var btnExcluirAnexoitem = "btnExcluirAnexoitem" + _pos;
 
-                        var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Anexos')/items('${_idOMP}')/AttachmentFiles`;
+                        var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Documentos')/items('${_idOMP}')/AttachmentFiles`;
                         url = this.props.siteurl;
 
                         var caminho = item.ServerRelativeUrl;
@@ -1194,7 +1456,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
                         return (
 
-                          <><a id={idImagem} target='_blank' data-interception="off" href={caminho} title="">{item.Name}</a><a style={{ "cursor": "pointer" }} onClick={() => this.excluirAnexo(`${strRelativeURL}/Anexos/${_idOMP}`, `${item.Name}`, `${idImagem}`, `${idBotao}`)} id={idBotao}>&nbsp;Excluir</a><br></br></>
+                          <><a id={idImagem} target='_blank' data-interception="off" href={caminho} title="">{item.Name}</a><a style={{ "cursor": "pointer" }} onClick={() => this.excluirAnexo(`${strRelativeURL}/Anexos/${_documentoNumero}`, `${item.Name}`, `${idImagem}`, `${idBotao}`)} id={idBotao}>&nbsp;Excluir</a><br></br></>
 
                         );
 
@@ -1229,7 +1491,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                 </button>
               </div>
               <div className="modal-body">
-                Deseja realmente salvar a OMP?
+                Deseja realmente alterar a OMP?
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
@@ -1256,7 +1518,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                 <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
               </div>
               <div className="modal-body">
-                OMP salva com sucesso!
+                OMP alterada com sucesso!
               </div>
               <div className="modal-footer">
                 <button type="button" id="btnSucesso" className="btn btn-primary">OK</button>
@@ -1754,7 +2016,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
         </div>
 
         <div className="modal fade " id="modalEditarSubConjunto" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog modalCadastrarConjuntos" role="document">
+          <div className="modal-dialog modalLargura700" role="document">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title" id="exampleModalLabel">Conjuntos - Editar</h5>
@@ -1904,33 +2166,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
           </div>
         </div>
 
-        <div className="modal fade" id="modalCadastrarSubConjuntos" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="exampleModalLabel">Sub-conjuntos - Cadastrar</h5>
-                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div className="modal-body">
-
-                <div className="form-row">
-                  <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Itens</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
-                  </div>
-                </div>
-
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button id="btnCadastrarSetupBIOS" className="btn btn-success">Salvar</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="modal fade" id="modalCadastrarPontoCorte" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
@@ -1946,13 +2181,13 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                   <div className="form-group col-md-9">
                     <label htmlFor="txtCodigoPIE_PontoCorte">Código PIE</label><span className="required"> *</span><br></br>
                     <select id="ddlCodigoPIE-PontoCorte" className="form-control">
-                          <option value="0" selected>Selecione...</option>
-                          {this.state.itemsPIE.map(function (item, key) {
-                            return (
-                              <option value={item.ID}>{item.PIE}</option>
-                            );
-                          })}
-                        </select>
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsPIE.map(function (item, key) {
+                        return (
+                          <option value={item.ID}>{item.PIE}</option>
+                        );
+                      })}
+                    </select>
                   </div>
                   <div className="form-group col-md-3">
                     <label htmlFor="dtData-PontoCorte">Data</label><span className="required"> *</span><br></br>
@@ -1976,8 +2211,53 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
           </div>
         </div>
 
-        <div className="modal fade" id="modalCadastrarAssistenciaTecnica" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className="modal fade" id="modalEditarPontoCorte" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Ponto de corte - Editar</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+
+                <div className="form-row">
+                  <div className="form-group col-md-9">
+                    <label htmlFor="txtCodigoPIE_PontoCorte">Código PIE</label><span className="required"> *</span><br></br>
+                    <select id="ddlCodigoPIE-PontoCorte-Editar" className="form-control" value={this.state.valorItemsPIEPontoCorteEditar} onChange={(e) => this.onChangePIEPontoCorteEditar(e.target.value)}>
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsPIE.map(function (item, key) {
+                        return (
+                          <option value={item.ID}>{item.PIE}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="form-group col-md-3">
+                    <label htmlFor="dtData-PontoCorte-Editar">Data</label><span className="required"> *</span><br></br>
+                    <InputMask mask="99/99/9999" value={this.state.valorItemsDataPontoCorteEditar} className="form-control" maskChar="_" id="dtData-PontoCorte-Editar" onChange={(e) => this.onTextChangeDataPontoCorteEditar(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtObservacao-PontoCorte-Editar">Observação</label><span className="required"> *</span><br></br>
+                    <input maxLength={200} type="text" className="form-control" id="txtObservacao-PontoCorte-Editar" />
+                  </div>
+                </div>
+
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnEditarPontoCorte" className="btn btn-success">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalCadastrarAssistenciaTecnica" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog modalLargura700" role="document">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title" id="exampleModalLabel">Assistência Técnica - Cadastrar</h5>
@@ -1988,16 +2268,156 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
               <div className="modal-body">
 
                 <div className="form-row">
+                  <div className="form-group col-md-9">
+                    <label htmlFor="txtObservacao-AssistenciaTecnica">Observação</label><span className="required"> *</span><br></br>
+                    <input maxLength={200} type="text" className="form-control" id="txtObservacao-AssistenciaTecnica" />
+                  </div>
+                  <div className="form-group col-md-3">
+                    <label htmlFor="dtDataEntrega-AssistenciaTecnica">Data de entrega</label><span className="required"> *</span><br></br>
+                    <InputMask mask="99/99/9999" className="form-control" maskChar="_" id="dtDataEntrega-AssistenciaTecnica" />
+                  </div>
+                </div>
+
+                <div className="form-row">
                   <div className="form-group col-md">
-                    <label htmlFor="txtItensSetupBIOSCadastrar">Itens</label><span className="required"> *</span><br></br>
-                    <input type="text" className="form-control" id="txtItensSetupBIOSCadastrar" />
+                    <label htmlFor="ddlCodigoPIE-AssistenciaTecnica">Código PIE</label><br></br>
+                    <select id="ddlCodigoPIE-AssistenciaTecnica" className="form-control"  >
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsPIE.map(function (item, key) {
+                        return (
+                          <option value={item.ID}>{item.PIE}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="form-group col-md">
+                    <label htmlFor="ddlCodigoPATS-AssistenciaTecnica">Código PATS</label><br></br>
+                    <select id="ddlCodigoPATS-AssistenciaTecnica" className="form-control"  >
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsPATS.map(function (item, key) {
+                        return (
+                          <option value={item.ID}>{item.PATS}</option>
+                        );
+                      })}
+                    </select>
                   </div>
                 </div>
 
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button id="btnCadastrarSetupBIOS" className="btn btn-success">Salvar</button>
+                <button id="btnCadastrarAssistenciaTecnica" className="btn btn-success">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalCadastrarBITRelacionado" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">BIT Relacionado - Cadastrar</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtBITRelacionado">BIT Relacionado</label><span className="required"> *</span><br></br>
+                    <input maxLength={200} type="text" className="form-control" id="txtBITRelacionado" />
+                  </div>
+                </div>
+
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnCadastrarBITRelacionado" className="btn btn-success">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalEditarBITRelacionado" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">BIT Relacionado - Editar</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtBITRelacionado-Editar">BIT Relacionado</label><span className="required"> *</span><br></br>
+                    <input maxLength={200} type="text" className="form-control" id="txtBITRelacionado-Editar" />
+                  </div>
+                </div>
+
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnEditarBITRelacionado" className="btn btn-success">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div className="modal fade" id="modalEditarAssistenciaTecnica" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog modalLargura700" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Assistência Técnica - Editar</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+
+                <div className="form-row">
+                  <div className="form-group col-md-9">
+                    <label htmlFor="txtObservacao-AssistenciaTecnica-Editar">Observação</label><span className="required"> *</span><br></br>
+                    <input maxLength={200} type="text" className="form-control" id="txtObservacao-AssistenciaTecnica-Editar" />
+                  </div>
+                  <div className="form-group col-md-3">
+                    <label htmlFor="dtDataEntrega-AssistenciaTecnica-Editar">Data de entrega</label><span className="required"> *</span><br></br>
+                    <InputMask mask="99/99/9999" className="form-control" maskChar="_" value={this.state.valorItemsDataEntregaAssistenciaTecnica} id="dtDataEntrega-AssistenciaTecnica-Editar" onChange={(e) => this.onTextChangeDataAssistenciaTecnicaEditar(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="ddlCodigoPIE-AssistenciaTecnica-Editar">Código PIE</label><br></br>
+                    <select id="ddlCodigoPIE-AssistenciaTecnica-Editar" value={this.state.valorItemsPIEAssistenciaTecnica} className="form-control" onChange={(e) => this.onChangePIEAssistenciaTecnica(e.target.value)}  >
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsPIE.map(function (item, key) {
+                        return (
+                          <option value={item.ID}>{item.PIE}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="form-group col-md">
+                    <label htmlFor="ddlCodigoPATS-AssistenciaTecnica-Editar">Código PATS</label><br></br>
+                    <select id="ddlCodigoPATS-AssistenciaTecnica-Editar" value={this.state.valorItemsPATSAssistenciaTecnica} className="form-control" onChange={(e) => this.onChangePATSAssistenciaTecnica(e.target.value)}  >
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsPATS.map(function (item, key) {
+                        return (
+                          <option value={item.ID}>{item.PATS}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                </div>
+
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnEditarAssistenciaTecnica" className="btn btn-success">Salvar</button>
               </div>
             </div>
           </div>
@@ -2035,6 +2455,106 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
           </div>
         </div>
 
+        <div className="modal fade" id="modalSucessoPontoCorte" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Ponto de corte cadastrado com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoCadastrarPontoCorte" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoAssistenciaTecnica" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Assistência técnica cadastrada com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoCadastrarAssistenciaTecnica" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoCadastrarBITRelacionado" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                BIT relacionado cadastrado com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoCadastrarBITRelacionado" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoEditarBITRelacionado" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                BIT relacionado alterado com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoEditarBITRelacionado" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div className="modal fade" id="modalSucessoEditarAssistenciaTecnica" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Assistência técnica alterada com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoEditarAssistenciaTecnica" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <div className="modal fade" id="modalSucessoEditarPontoCorte" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Ponto de corte editado com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoEditarPontoCorte" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
         <div className="modal fade" id="modalSucessoExcluirConjunto" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
@@ -2062,6 +2582,54 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
               </div>
               <div className="modal-footer">
                 <button type="button" id="btnSucessoExcluirSubConjunto" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoExcluirPontoCorte" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Ponto de corte excluido com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoExcluirPontoCorte" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoExcluirAssistenciaTecnica" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Assistência técnica excluida com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoExcluirAssistenciaTecnica" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoExcluirBITRelacionado" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                BIT relacionado excluido com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoExcluirBITRelacionado" className="btn btn-primary">OK</button>
               </div>
             </div>
           </div>
@@ -2169,8 +2737,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
 
-        console.log("resultData atual", resultData);
-
         reactRevisaoAtual.setState({
           itemsRevisaoAtual: resultData.d.results[0].Choices.results
         });
@@ -2188,8 +2754,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
 
-        console.log("resultData atual", resultData);
-
         reactNovaRevisao.setState({
           itemsNovaRevisao: resultData.d.results[0].Choices.results
         });
@@ -2206,8 +2770,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
-
-        console.log("resultData atual", resultData);
 
         reactDisposicaoEstoqueAcao.setState({
           itemsDisposicaoEstoqueAcao: resultData.d.results[0].Choices.results
@@ -2227,8 +2789,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
 
-        console.log("resultData atual", resultData);
-
         reactDisposicaoFornecedorAcao.setState({
           itemsDisposicaoFornecedorAcao: resultData.d.results[0].Choices.results
         });
@@ -2246,8 +2806,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
-
-        console.log("resultData atual", resultData);
 
         reactDisposicaoEmTransitoAcao.setState({
           itemsDisposicaoEmTransitoAcao: resultData.d.results[0].Choices.results
@@ -2267,7 +2825,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
-        console.log("result Aprovadores", resultData);
         reactHandlerAprovadores.setState({
 
           itemsAprovadores: resultData.d.results
@@ -2282,12 +2839,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var reactItemsConjuntos = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Conjunto' and OMP/ID eq ` + _idOMP,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=OMP/ID eq ${_idOMP} and Conjuntos eq 'Conjunto'`,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
-
-        console.log("resultData Conjuntos", resultData);
 
         reactItemsConjuntos.setState({
           itemsConjuntos: resultData.d.results
@@ -2301,7 +2856,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var reactItemsSubConjuntos = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Subconjunto' and OMP/ID eq ` + _idOMP,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=OMP/ID eq ${_idOMP} and Conjuntos eq 'Subconjunto'`,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -2317,11 +2872,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var reactItemsPontoCorte = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Ponto de Corte')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,Data&$expand=OMP,PIE&$filter=OMP/ID eq ` + _idOMP,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Ponto de Corte')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/PIE,PIE/ID,Data,Modified,Editor/Title&$expand=OMP,PIE,Editor&$filter=OMP/Numero eq ` + _documentoNumero,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
-        console.log("resultData", resultData);
         reactItemsPontoCorte.setState({
           itemsPontoCorte: resultData.d.results
         });
@@ -2335,11 +2889,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var reactItemsInforAssistenciaTecnica = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Materiais')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,PATS/ID,DataEntrega,Modified,Editor/Title&$expand=OMP,PIE,PATS,Editor&$filter=OMP/ID eq ` + _idOMP,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Materiais')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,PATS/ID,DataEntrega,Modified,Editor/Title,PIE/PIE,PATS/PATS&$expand=OMP,PIE,PATS,Editor&$filter=OMP/Numero eq ` + _documentoNumero,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
-        console.log("resultData", resultData);
         reactItemsInforAssistenciaTecnica.setState({
           itemsListaAssistenciaTecnica: resultData.d.results
         });
@@ -2349,15 +2902,16 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       }
     });
 
-    var reactPIE = this;
+    var reactItemsBITRelacionado = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=4999&$filter=OMPId eq ${_idOMP}&$orderby= PIE`,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('BIT relacionado')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,Modified,Editor/Title&$expand=OMP,Editor&$filter=OMP/Numero eq ` + _documentoNumero,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
-        reactPIE.setState({
-          itemsPIE : resultData.d.results
+
+        reactItemsBITRelacionado.setState({
+          itemsListaBITRelacionado: resultData.d.results
         });
       },
       error: function (jqXHR, textStatus, errorThrown) {
@@ -2366,6 +2920,38 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     });
 
 
+    var reactPIE = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=4999&$filter=OMP/ID eq ${_idOMP} and PIE ne null&$orderby= PIE`,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        reactPIE.setState({
+          itemsPIE: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+    var reactPATS = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=4999&$filter=OMP/ID eq ${_idOMP} and PATS ne null&$orderby= PATS`,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        reactPATS.setState({
+          itemsPATS: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
 
 
     this.getOMP();
@@ -2382,16 +2968,12 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: async (resultData) => {
 
-        console.log("resultData OMP", resultData);
-
         if (resultData.d.results.length > 0) {
 
           for (var i = 0; i < resultData.d.results.length; i++) {
 
             var numero = resultData.d.results[i].Numero;
             _documentoNumero = numero;
-
-            console.log("_documentoNumero", _documentoNumero);
 
             var sintese = resultData.d.results[i].Title;
             var tipo = resultData.d.results[i].TipoOMP;
@@ -2400,11 +2982,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             var documentosOrigem = resultData.d.results[i].DocumentosOrigem;
             _pastaCriada = resultData.d.results[i].PastaCriada;
 
-            console.log("_pastaCriada", _pastaCriada);
-
             var itemNovo = resultData.d.results[i].siteNovoSPOnline;
-
-            console.log("itemNovo", itemNovo);
 
             var responsavelArea = "";
             var responsavelTecnico = "";
@@ -2426,8 +3004,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
               areaExecutoraAT = "0";
 
             }
-
-            console.log("responsavelArea", responsavelArea);
 
             this.setState({
               valorItemsTipo: tipo,
@@ -2455,8 +3031,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
             }
 
-            console.log("_assistenciaTecnica", _assistenciaTecnica);
-
 
             var observacoes = resultData.d.results[i].CIObservacao;
             var txtObservacoes = "";
@@ -2464,7 +3038,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             if (observacoes != null) {
 
               txtObservacoes = observacoes.replace(/<[\/]{0,1}(div)[^><]*>/g, "");
-              console.log("txtObservacoes", txtObservacoes);
 
               if (txtObservacoes.includes("<font")) {
 
@@ -2495,7 +3068,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             if (descricaoProblema != null) {
 
               txtDescricaoProblema = descricaoProblema.replace(/<[\/]{0,1}(div)[^><]*>/g, "");
-              console.log("txtDescricaoProblema", txtDescricaoProblema);
 
               if (txtDescricaoProblema.includes("<font")) {
 
@@ -2524,7 +3096,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             if (solucaoEncontrada != null) {
 
               txtSolucaoEncontrada = solucaoEncontrada.replace(/<[\/]{0,1}(div)[^><]*>/g, "");
-              console.log("txtSolucaoEncontrada", txtSolucaoEncontrada);
 
               if (txtSolucaoEncontrada.includes("<font")) {
 
@@ -2553,7 +3124,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             if (alteracoes != null) {
 
               txtAlteracoes = alteracoes.replace(/<[\/]{0,1}(div)[^><]*>/g, "");
-              console.log("txtAlteracoes", txtAlteracoes);
 
               if (txtAlteracoes.includes("<font")) {
 
@@ -2581,7 +3151,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             if (documentosAlterados != null) {
 
               txtDocumentosAlterados = documentosAlterados.replace(/<[\/]{0,1}(div)[^><]*>/g, "");
-              console.log("txtDocumentosAlterados", txtDocumentosAlterados);
 
               if (txtDocumentosAlterados.includes("<font")) {
 
@@ -2604,8 +3173,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
             ////////////////
             var status = resultData.d.results[i].Status;
-
-            console.log("sintese", sintese);
 
             jQuery("#txtTitulo").val(sintese);
             jQuery("#txtDocumentosOrigem").val(documentosOrigem);
@@ -2665,9 +3232,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var nomePagina = url.substring(url.lastIndexOf('/') + 1);
     var strRelativeURL = relativeURL.replace(`SitePages/${nomePagina}`, "");
 
-    console.log("strRelativeURL", strRelativeURL);
-
-    await _web.getFolderByServerRelativeUrl(`${strRelativeURL}/Anexos/${_idOMP}`).files.orderBy('TimeLastModified', true)
+    await _web.getFolderByServerRelativeUrl(`${strRelativeURL}/Anexos/${_documentoNumero}`).files.orderBy('TimeLastModified', true)
 
       .expand('ListItemAllFields', 'Author').get().then(r => {
 
@@ -2696,7 +3261,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       var nomePagina = url.substring(url.lastIndexOf('/') + 1);
       var strRelativeURL = relativeURL.replace(`SitePages/${nomePagina}`, "");
 
-      await _web.getFolderByServerRelativeUrl(`${strRelativeURL}/Lists/Cartas de Baixa/Attachments/${_idOMP}`).files.getByName(name).delete()
+      await _web.getFolderByServerRelativeUrl(`${strRelativeURL}/Lists/Documentos/Attachments/${_idOMP}`).files.getByName(name).delete()
         .then(async response => {
           jQuery(`#${elemento}`).hide();
           jQuery(`#${elemento2}`).hide();
@@ -2742,10 +3307,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var documentosAlterados = _documentosAlterados;
     var documentosOrigem = $("#txtDocumentosOrigem").val();;
 
-    var responsavelTecnico = $("#ddlResponsavelTecnico").val();
-    var responsavelArea = $("#ddlResponsavelArea").val();
-    var areaExecutoraFabrica = $("#ddlAreaExecutoraFabrica").val();
-    var areaExecutoraAT = $("#ddlAreaExecutoraAT").val();
+    //var responsavelTecnico = $("#ddlResponsavelTecnico").val();
+    //var responsavelArea = $("#ddlResponsavelArea").val();
+    //var areaExecutoraFabrica = $("#ddlAreaExecutoraFabrica").val();
+    //var areaExecutoraAT = $("#ddlAreaExecutoraAT").val();
 
     var arrProducao = [];
     $.each($("input[name='checkProducao']:checked"), function () {
@@ -2838,29 +3403,29 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     }
 
 
-    if (responsavelTecnico == 0) {
-      alert("Forneça o responsável técnico!");
-      document.getElementById('headingAprovadores').scrollIntoView();
-      return false;
-    }
+    // if (responsavelTecnico == 0) {
+    //   alert("Forneça o responsável técnico!");
+    //   document.getElementById('headingAprovadores').scrollIntoView();
+    //   return false;
+    // }
 
-    if (responsavelArea == 0) {
-      alert("Forneça o Responsável da Área!");
-      document.getElementById('headingAprovadores').scrollIntoView();
-      return false;
-    }
+    // if (responsavelArea == 0) {
+    //   alert("Forneça o Responsável da Área!");
+    //   document.getElementById('headingAprovadores').scrollIntoView();
+    //   return false;
+    // }
 
-    if (areaExecutoraFabrica == 0) {
-      alert("Forneça o Responsável da Fábrica!");
-      document.getElementById('headingAprovadores').scrollIntoView();
-      return false;
-    }
+    // if (areaExecutoraFabrica == 0) {
+    //   alert("Forneça o Responsável da Fábrica!");
+    //   document.getElementById('headingAprovadores').scrollIntoView();
+    //   return false;
+    // }
 
-    if (areaExecutoraAT == 0) {
-      alert("Forneça a Área Executora AT!");
-      document.getElementById('headingAprovadores').scrollIntoView();
-      return false;
-    }
+    // if (areaExecutoraAT == 0) {
+    //   alert("Forneça a Área Executora AT!");
+    //   document.getElementById('headingAprovadores').scrollIntoView();
+    //   return false;
+    // }
 
 
     if (opcao == "Salvar") {
@@ -2890,10 +3455,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var documentosAlterados = _documentosAlterados;
     var documentosOrigem = $("#txtDocumentosOrigem").val();
 
-    var responsavelTecnico = $("#ddlResponsavelTecnico").val();
-    var responsavelArea = $("#ddlResponsavelArea").val();
-    var areaExecutoraFabrica = $("#ddlAreaExecutoraFabrica").val();
-    var areaExecutoraAT = $("#ddlAreaExecutoraAT").val();
+    //var responsavelTecnico = $("#ddlResponsavelTecnico").val();
+    //var responsavelArea = $("#ddlResponsavelArea").val();
+    //var areaExecutoraFabrica = $("#ddlAreaExecutoraFabrica").val();
+    //var areaExecutoraAT = $("#ddlAreaExecutoraAT").val();
 
     var arrProducao = [];
     $.each($("input[name='checkProducao']:checked"), function () {
@@ -2904,23 +3469,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     $.each($("input[name='checkAssitenciaTecnica']:checked"), function () {
       arrAssistenciaTecnica.push($(this).val());
     });
-
-    console.log("titulo", titulo);
-    console.log("tipo", tipo);
-    console.log("objetivo", objetivo);
-    console.log("divisaoImpressoras", divisaoImpressoras);
-    console.log("arrProducao", arrProducao);
-    console.log("arrAssistenciaTecnica", arrAssistenciaTecnica);
-    console.log("observacao", observacao);
-    console.log("descricaoProblema", descricaoProblema);
-    console.log("solucaoEncontrada", solucaoEncontrada);
-    console.log("alteracoes", alteracoes);
-    console.log("documentosAlterados", documentosAlterados);
-    console.log("documentosOrigem", documentosOrigem);
-    console.log("responsavelTecnico", responsavelTecnico);
-    console.log("responsavelArea", responsavelArea);
-    console.log("areaExecutoraFabrica", areaExecutoraFabrica);
-    console.log("areaExecutoraAT", areaExecutoraAT);
 
     await _web.lists
       .getByTitle("Ordem de Modificação de Produto")
@@ -2937,10 +3485,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
         Alteracoes: alteracoes,
         DocumentosAlterados: documentosAlterados,
         DocumentosOrigem: documentosOrigem,
-        ResponsavelTecnicoId: responsavelTecnico,
-        ResponsavelAreaId: responsavelArea,
-        AreaExecutoraFabricaId: areaExecutoraFabrica,
-        AreaExecutoraATId: areaExecutoraAT,
+        //ResponsavelTecnicoId: responsavelTecnico,
+        //ResponsavelAreaId: responsavelArea,
+        //AreaExecutoraFabricaId: areaExecutoraFabrica,
+        //AreaExecutoraATId: areaExecutoraAT,
 
       })
       .then(async response => {
@@ -2970,7 +3518,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
       if (_pastaCriada != "Sim") {
 
-        _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_idOMP}`).then(async data => {
+        _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_documentoNumero}`).then(async data => {
 
           await _web.lists
             .getByTitle("Ordem de Modificação de Produto")
@@ -2986,7 +3534,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
                 //alert(rplNomeArquivo);
                 //Upload a file to the SharePoint Library
-                _web.getFolderByServerRelativeUrl(`${_caminho}/Anexos/${_idOMP}`)
+                _web.getFolderByServerRelativeUrl(`${_caminho}/Anexos/${_documentoNumero}`)
                   //.files.add(files[i].name, files[i], true)
                   .files.add(rplNomeArquivo, files[i], true)
                   .then(async data => {
@@ -3030,7 +3578,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
           //alert(rplNomeArquivo);
           //Upload a file to the SharePoint Library
-          _web.getFolderByServerRelativeUrl(`${_caminho}/Anexos/${_idOMP}`)
+          _web.getFolderByServerRelativeUrl(`${_caminho}/Anexos/${_documentoNumero}`)
             //.files.add(files[i].name, files[i], true)
             .files.add(rplNomeArquivo, files[i], true)
             .then(async data => {
@@ -3061,7 +3609,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
       if (_pastaCriada != "Sim") {
 
-        _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_idOMP}`).then(async data => {
+        _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_documentoNumero}`).then(async data => {
 
           await _web.lists
             .getByTitle("Ordem de Modificação de Produto")
@@ -3232,23 +3780,344 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
     jQuery("#btnCadastrarPontoCorte").prop("disabled", true);
 
-    var codigoPIE = $("#txtCodigoPIE-PontoCorte").val();
-    var data = $("#dtData-PontoCorte").val();
+    var codigoPIE = $("#ddlCodigoPIE-PontoCorte").val();
+    var data = "" + $("#dtData-PontoCorte").val() + "";
     var observacao = $("#txtObservacao-PontoCorte").val();
 
+    if (codigoPIE == "0") {
+      alert("Forneça o Código PIE!");
+      jQuery("#btnCadastrarPontoCorte").prop("disabled", false);
+      return false;
+    }
+
+    if (data == "") {
+      alert("Forneça uma data!");
+      jQuery("#btnCadastrarPontoCorte").prop("disabled", false);
+      return false;
+    } else {
+      var reg = /(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d/;
+      if (data.match(reg)) {
+      }
+      else {
+        alert("Forneça uma data válida!");
+        jQuery("#btnCadastrarPontoCorte").prop("disabled", false);
+        return false;
+      }
+    }
+
+    if (observacao == "") {
+      alert("Forneça uma observação!");
+      jQuery("#btnCadastrarPontoCorte").prop("disabled", false);
+      return false;
+    }
+
+    var dataDia = data.substring(0, 2);
+    var dataMes = data.substring(3, 5);
+    var dataAno = data.substring(6, 10);
+    var formData = dataAno + "-" + dataMes + "-" + dataDia;
+
     await _web.lists
-      .getByTitle("Conjuntos e Subconjuntos")
+      .getByTitle("Ponto de Corte")
       .items.add({
         OMPId: _idOMP,
+        PIEId: codigoPIE,
+        Data: formData,
+        Title: observacao
 
       })
       .then(response => {
 
         console.log("Cadastrou");
 
-        jQuery("#btnCadastrarConjunto").prop("disabled", false);
-        jQuery("#modalCadastrarConjuntos").modal('hide');
-        jQuery("#modalSucessoCadastrarConjunto").modal({ backdrop: 'static', keyboard: false });
+        jQuery("#btnCadastrarPontoCorte").prop("disabled", false);
+        jQuery("#modalCadastrarPontoCorte").modal('hide');
+        jQuery("#modalSucessoPontoCorte").modal({ backdrop: 'static', keyboard: false });
+
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+
+
+  }
+
+
+  protected async cadastrarAssistenciaTecnica() {
+
+    jQuery("#btnCadastrarAssistenciaTecnica").prop("disabled", true);
+
+    var codigoPIE = $("#ddlCodigoPIE-AssistenciaTecnica").val();
+    var codigoPATS = $("#ddlCodigoPATS-AssistenciaTecnica").val();
+    var observacao = $("#txtObservacao-AssistenciaTecnica").val();
+    var dataEntrega = "" + $("#dtDataEntrega-AssistenciaTecnica").val() + "";
+
+    if (codigoPIE == "0") codigoPIE == null;
+    if (codigoPATS == "0") codigoPATS == null;
+
+    console.log("codigoPIE", codigoPIE);
+    console.log("codigoPATS", codigoPATS);
+    console.log("observacao", observacao);
+    console.log("dataEntrega", dataEntrega);
+
+    if (observacao == "") {
+      alert("Forneça uma observação!");
+      jQuery("#btnCadastrarAssistenciaTecnica").prop("disabled", false);
+      return false;
+    }
+
+    if (dataEntrega == "") {
+      alert("Forneça uma data!");
+      jQuery("#btnCadastrarAssistenciaTecnica").prop("disabled", false);
+      return false;
+    } else {
+      var reg = /(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d/;
+      if (dataEntrega.match(reg)) {
+      }
+      else {
+        alert("Forneça uma data de entrega válida!");
+        jQuery("#btnCadastrarAssistenciaTecnica").prop("disabled", false);
+        return false;
+      }
+    }
+
+
+    var dataDia = dataEntrega.substring(0, 2);
+    var dataMes = dataEntrega.substring(3, 5);
+    var dataAno = dataEntrega.substring(6, 10);
+    var formData = dataAno + "-" + dataMes + "-" + dataDia;
+
+    await _web.lists
+      .getByTitle("Materiais")
+      .items.add({
+        OMPId: _idOMP,
+        PIEId: codigoPIE,
+        PATSId: codigoPATS,
+        DataEntrega: formData,
+        Title: observacao
+
+      })
+      .then(response => {
+
+        console.log("Cadastrou");
+
+        jQuery("#btnCadastrarAssistenciaTecnica").prop("disabled", false);
+        jQuery("#modalCadastrarAssistenciaTecnica").modal('hide');
+        jQuery("#modalSucessoAssistenciaTecnica").modal({ backdrop: 'static', keyboard: false });
+
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+
+
+  }
+
+  protected async cadastrarBITRelacionado() {
+
+    jQuery("#btnCadastrarBITRelacionado").prop("disabled", true);
+
+    var BITRelacionado = $("#txtBITRelacionado").val();
+
+    if (BITRelacionado == "") {
+      alert("Forneça um BIT relacionado!");
+      jQuery("#btnCadastrarBITRelacionado").prop("disabled", false);
+      return false;
+    }
+
+    await _web.lists
+      .getByTitle("BIT relacionado")
+      .items.add({
+        OMPId: _idOMP,
+        Title: BITRelacionado,
+      })
+      .then(response => {
+
+        console.log("Cadastrou");
+
+        jQuery("#btnCadastrarBITRelacionado").prop("disabled", false);
+        jQuery("#modalCadastrarBITRelacionado").modal('hide');
+        jQuery("#modalSucessoCadastrarBITRelacionado").modal({ backdrop: 'static', keyboard: false });
+
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+
+  }
+
+  protected async editarBITRelacionado() {
+
+    jQuery("#btnEditarBITRelacionado").prop("disabled", true);
+
+    var BITRelacionado = $("#txtBITRelacionado-Editar").val();
+
+    if (BITRelacionado == "") {
+      alert("Forneça um BIT relacionado!");
+      jQuery("#btnEditarBITRelacionado").prop("disabled", false);
+      return false;
+    }
+
+    await _web.lists
+      .getByTitle("BIT relacionado")
+      .items.getById(_idBITRelacionado).update({
+        OMPId: _idOMP,
+        Title: BITRelacionado,
+      })
+      .then(response => {
+
+        console.log("Editou");
+
+        jQuery("#btnEditarBITRelacionado").prop("disabled", false);
+        jQuery("#modalEditarBITRelacionado").modal('hide');
+        jQuery("#modalSucessoEditarBITRelacionado").modal({ backdrop: 'static', keyboard: false });
+
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+
+  }
+
+
+  protected async editarAssistenciaTecnica() {
+
+    jQuery("#btnEditarAssistenciaTecnica").prop("disabled", true);
+
+    var codigoPIE = $("#ddlCodigoPIE-AssistenciaTecnica-Editar").val();
+    var codigoPATS = $("#ddlCodigoPATS-AssistenciaTecnica-Editar").val();
+    var observacao = $("#txtObservacao-AssistenciaTecnica-Editar").val();
+    var dataEntrega = "" + $("#dtDataEntrega-AssistenciaTecnica-Editar").val() + "";
+
+    if (codigoPIE == "0") codigoPIE == null;
+    if (codigoPATS == "0") codigoPATS == null;
+
+    console.log("codigoPIE", codigoPIE);
+    console.log("codigoPATS", codigoPATS);
+    console.log("observacao", observacao);
+    console.log("dataEntrega", dataEntrega);
+
+    if (observacao == "") {
+      alert("Forneça uma observação!");
+      jQuery("#btnEditarAssistenciaTecnica").prop("disabled", false);
+      return false;
+    }
+
+    if (dataEntrega == "") {
+      alert("Forneça uma data!");
+      jQuery("#btnEditarAssistenciaTecnica").prop("disabled", false);
+      return false;
+    } else {
+      var reg = /(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d/;
+      if (dataEntrega.match(reg)) {
+      }
+      else {
+        alert("Forneça uma data de entrega válida!");
+        jQuery("#btnEditarAssistenciaTecnica").prop("disabled", false);
+        return false;
+      }
+    }
+
+
+    var dataDia = dataEntrega.substring(0, 2);
+    var dataMes = dataEntrega.substring(3, 5);
+    var dataAno = dataEntrega.substring(6, 10);
+    var formData = dataAno + "-" + dataMes + "-" + dataDia;
+
+    await _web.lists
+      .getByTitle("Materiais")
+      .items.getById(_idAssistenciaTecnica).update({
+        OMPId: _idOMP,
+        PIEId: codigoPIE,
+        PATSId: codigoPATS,
+        DataEntrega: formData,
+        Title: observacao
+      })
+      .then(response => {
+
+        console.log("Editou");
+
+        jQuery("#btnEditarAssistenciaTecnica").prop("disabled", false);
+        jQuery("#modalEditarAssistenciaTecnica").modal('hide');
+        jQuery("#modalSucessoEditarAssistenciaTecnica").modal({ backdrop: 'static', keyboard: false });
+
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+
+
+  }
+
+
+
+
+  protected async editarPontoCorte() {
+
+    jQuery("#btnEditarPontoCorte").prop("disabled", true);
+
+    //var codigoPIE = _PIEPontoCorteEditar;
+    var codigoPIE = $("#ddlCodigoPIE-PontoCorte-Editar").val();
+    var data = "" + $("#dtData-PontoCorte-Editar").val() + "";
+    var observacao = $("#txtObservacao-PontoCorte-Editar").val();
+
+    console.log("codigoPIE", codigoPIE);
+    console.log("data", data);
+    console.log("observacao", observacao);
+
+    if (codigoPIE == "0") {
+      alert("Forneça o Código PIE!");
+      jQuery("#btnEditarPontoCorte").prop("disabled", false);
+      return false;
+    }
+
+    if (data == "") {
+      alert("Forneça uma data!");
+      jQuery("#btnEditarPontoCorte").prop("disabled", false);
+      return false;
+    } else {
+      var reg = /(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d/;
+      if (data.match(reg)) {
+      }
+      else {
+        alert("Forneça uma data válida!");
+        jQuery("#btnEditarPontoCorte").prop("disabled", false);
+        return false;
+      }
+    }
+
+    if (observacao == "") {
+      alert("Forneça uma observação!");
+      jQuery("#btnEditarPontoCorte").prop("disabled", false);
+      return false;
+    }
+
+    var dataDia = data.substring(0, 2);
+    var dataMes = data.substring(3, 5);
+    var dataAno = data.substring(6, 10);
+    var formData = dataAno + "-" + dataMes + "-" + dataDia;
+
+    console.log("formData", formData);
+
+    await _web.lists
+      .getByTitle("Ponto de Corte")
+      .items.getById(_idPontoCorte).update({
+        OMPId: _idOMP,
+        PIEId: codigoPIE,
+        Data: formData,
+        Title: observacao
+      })
+      .then(response => {
+
+        console.log("Editou");
+
+        jQuery("#btnEditarPontoCorte").prop("disabled", false);
+        jQuery("#modalEditarPontoCorte").modal('hide');
+        jQuery("#modalSucessoEditarPontoCorte").modal({ backdrop: 'static', keyboard: false });
 
       })
       .catch((error: any) => {
@@ -3410,6 +4279,43 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     });
   }
 
+  private onChangePIEPontoCorteEditar = (val) => {
+
+    this.setState({
+      valorItemsPIEPontoCorteEditar: val,
+    });
+  }
+
+  private onChangePIEAssistenciaTecnica = (val) => {
+
+    this.setState({
+      valorItemsPIEAssistenciaTecnica: val,
+    });
+  }
+
+  private onChangePATSAssistenciaTecnica = (val) => {
+
+    this.setState({
+      valorItemsPATSAssistenciaTecnica: val,
+    });
+  }
+
+  private onTextChangeDataPontoCorteEditar = (val) => {
+
+    this.setState({
+      valorItemsDataPontoCorteEditar: val,
+    });
+
+  }
+
+  private onTextChangeDataAssistenciaTecnicaEditar = (val) => {
+
+    this.setState({
+      valorItemsDataEntregaAssistenciaTecnica: val,
+    });
+
+  }
+
   private onChangeObjetivo = (val) => {
     this.setState({
       valorItemsObjetivo: val,
@@ -3461,7 +4367,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var reactItemsConjuntos = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Conjunto' and OMP/ID eq ` + _idOMP,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=OMP/ID eq ${_idOMP} and Conjuntos eq 'Conjunto'`,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -3485,7 +4391,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var reactItemsSubConjuntos = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=Conjuntos eq 'Subconjunto' and OMP/ID eq ` + _idOMP,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=50&$filter=OMP/ID eq ${_idOMP} and Conjuntos eq 'Subconjunto'`,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -3504,6 +4410,91 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     if (opcao == "Editar") jQuery("#modalSucessoEditarSubConjunto").modal('hide');
 
   }
+
+  protected async sucessoPontoCorte(opcao) {
+
+    var reactItemsPontoCorte = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Ponto de Corte')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/PIE,PIE/ID,Data,Modified,Editor/Title&$expand=OMP,PIE,Editor&$filter=OMP/Numero eq ` + _documentoNumero,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        console.log("resultData", resultData);
+        reactItemsPontoCorte.setState({
+          itemsPontoCorte: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+    if (opcao == "Salvar") jQuery("#modalSucessoPontoCorte").modal('hide');
+    if (opcao == "Excluir") jQuery("#modalSucessoExcluirPontoCorte").modal('hide');
+    if (opcao == "Editar") jQuery("#modalSucessoEditarPontoCorte").modal('hide');
+
+  }
+
+  protected async sucessoAssistenciaTecnica(opcao) {
+
+    var reactItemsInforAssistenciaTecnica = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Materiais')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,PIE/ID,PATS/ID,DataEntrega,Modified,Editor/Title,PIE/PIE,PATS/PATS&$expand=OMP,PIE,PATS,Editor&$filter=OMP/Numero eq ` + _documentoNumero,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        console.log("resultData assistencia tecnica", resultData);
+        reactItemsInforAssistenciaTecnica.setState({
+          itemsListaAssistenciaTecnica: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+    if (opcao == "Salvar") jQuery("#modalSucessoAssistenciaTecnica").modal('hide');
+    if (opcao == "Excluir") jQuery("#modalSucessoExcluirAssistenciaTecnica").modal('hide');
+    if (opcao == "Editar") jQuery("#modalSucessoEditarAssistenciaTecnica").modal('hide');
+
+  }
+
+
+  protected async sucessoBITRelacionado(opcao) {
+
+    var reactItemsBITRelacionado = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('BIT relacionado')/items?$top=50&$orderby= Created asc&$select=ID,Title,OMP/ID,Modified,Editor/Title&$expand=OMP,Editor&$filter=OMP/Numero eq ` + _documentoNumero,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        console.log("resultData assistencia tecnica", resultData);
+        reactItemsBITRelacionado.setState({
+          itemsListaBITRelacionado: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+    if (opcao == "Salvar") jQuery("#modalSucessoCadastrarBITRelacionado").modal('hide');
+    if (opcao == "Excluir") jQuery("#modalSucessoExcluirBITRelacionado").modal('hide');
+    if (opcao == "Editar") jQuery("#modalSucessoEditarBITRelacionado").modal('hide');
+
+  }
+
+
+
+
+
+
 
   protected abrirModalCadastrarConjuntos(tipo) {
 
@@ -3762,17 +4753,27 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
   protected abrirModalCadastrarPontoCorte() {
 
-    //   jQuery("#txtItensSetupBIOSCadastrar").val("");
-    //  jQuery('#RichTextObservacaoSetupBIOSCadastrar').find('.ql-editor').html("<p><br></p>");
+    $("#ddlCodigoPIE-PontoCorte").val("0");
+    $("#dtData-PontoCorte").val("");
+    $("#txtObservacao-PontoCorte").val("");
     jQuery("#modalCadastrarPontoCorte").modal({ backdrop: 'static', keyboard: false });
 
   }
 
   protected abrirModalCadastrarAssistenciaTecnica() {
 
-    //  jQuery("#txtItensSetupBIOSCadastrar").val("");
-    //  jQuery('#RichTextObservacaoSetupBIOSCadastrar').find('.ql-editor').html("<p><br></p>");
+    $("#txtObservacao-AssistenciaTecnica").val("");
+    $("#dtDataEntrega-AssistenciaTecnica").val("");
+    $("#ddlCodigoPIE-AssistenciaTecnica").val("0");
+    $("#ddlCodigoPATS-AssistenciaTecnica").val("0");
     jQuery("#modalCadastrarAssistenciaTecnica").modal({ backdrop: 'static', keyboard: false });
+
+  }
+
+  protected abrirModalCadastrarBITRelacionado() {
+
+    $("#txtBITRelacionado").val("");
+    jQuery("#modalCadastrarBITRelacionado").modal({ backdrop: 'static', keyboard: false });
 
   }
 
