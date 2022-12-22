@@ -48,6 +48,10 @@ var _idConjunto;
 var _idPontoCorte;
 var _idAssistenciaTecnica;
 var _idBITRelacionado;
+var _aprovadores = [];
+var _aprovadorFuncao = ["Responsável Técnico", "Responsável da Área", "Área executora fábrica", "Área executora AT"];
+var _grupos = [];
+var _status;
 
 export interface IReactGetItemsState {
 
@@ -281,7 +285,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
 
 
-  public componentDidMount() {
+  public async componentDidMount() {
 
     _web = new Web(this.props.context.pageContext.web.absoluteUrl);
     _caminho = this.props.context.pageContext.web.serverRelativeUrl;
@@ -297,12 +301,24 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       .addEventListener("click", (e: Event) => this.validar("Salvar"));
 
     document
+      .getElementById("btnValidarEnviarAprovacao")
+      .addEventListener("click", (e: Event) => this.validar("Aprovar"));
+
+    document
       .getElementById("btnSalvar")
       .addEventListener("click", (e: Event) => this.editar("Salvar"));
 
     document
+      .getElementById("btnEnviarAprovacao")
+      .addEventListener("click", (e: Event) => this.editar("Aprovar"));
+
+    document
       .getElementById("btnSucesso")
-      .addEventListener("click", (e: Event) => this.fecharSucesso());
+      .addEventListener("click", (e: Event) => this.fecharSucesso("Salvar"));
+
+    document
+      .getElementById("btnSucessoEnviarAprovacao")
+      .addEventListener("click", (e: Event) => this.fecharSucesso("Aprovar"));
 
     document
       .getElementById("btnAbrirModalCadastrarConjuntos")
@@ -430,12 +446,62 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       .getElementById("btnSucessoEditarSubConjunto")
       .addEventListener("click", (e: Event) => this.sucessoSubConjuntos("Editar"));
 
+    document
+      .getElementById("btnVoltar")
+      .addEventListener("click", (e: Event) => this.voltar());
+
 
     jQuery("#conteudoLoading").html(`<br/><br/><img style="height: 80px; width: 80px" src='${_caminho}/SiteAssets/loading.gif'/>
       <br/>Aguarde....<br/><br/>
       Dependendo do tamanho do anexo e a velocidade<br>
        da Internet essa ação pode demorar um pouco. <br>
        Não fechar a janela!<br/><br/>`);
+
+
+    await _web.currentUser.get().then(f => {
+      // console.log("user", f);
+      var id = f.Id;
+
+      var grupos = [];
+
+      jQuery.ajax({
+        url: `${this.props.siteurl}/_api/web/GetUserById(${id})/Groups`,
+        type: "GET",
+        headers: { 'Accept': 'application/json; odata=verbose;' },
+        async: false,
+        success: async function (resultData) {
+
+          //console.log("resultDataGrupo", resultData);
+
+          if (resultData.d.results.length > 0) {
+
+            for (var i = 0; i < resultData.d.results.length; i++) {
+
+              grupos.push(resultData.d.results[i].Title);
+
+            }
+
+          }
+
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          console.log(jqXHR.responseText);
+        }
+
+      })
+
+      //console.log("grupos", grupos);
+      _grupos = grupos;
+
+    })
+
+    jQuery("#btnValidarEnviarAprovacao").hide();
+    jQuery("#btnValidarSalvar").hide();
+
+    jQuery("#ddlResponsavelTecnico").prop("disabled", true);
+    jQuery("#ddlResponsavelArea").prop("disabled", true);
+    jQuery("#ddlAreaExecutoraFabrica").prop("disabled", true);
+    jQuery("#ddlAreaExecutoraAT").prop("disabled", true);
 
     this.handler();
 
@@ -445,18 +511,11 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
     const tablecolumnsPontoCorte = [
       {
-        dataField: "OMP.ID",
-        text: "OMP",
-        headerClasses: 'text-center',
-        classes: 'text-center',
-        headerStyle: { "backgroundColor": "#bee5eb", "width": "100px" },
-      },
-      {
         dataField: "PIE.PIE",
         text: "Código PIE",
         classes: 'text-center',
         headerClasses: 'text-center',
-        headerStyle: { "backgroundColor": "#bee5eb", "width": "100px" },
+        headerStyle: { "backgroundColor": "#bee5eb" },
       },
       {
         dataField: "Title",
@@ -695,7 +754,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       }
     ]
 
-
     const tablecolumnsBITRelacionado = [
       {
         dataField: "Title",
@@ -791,10 +849,24 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             <div id="collapseInformacoesProduto" className="collapse show" aria-labelledby="headingOne">
               <div className="card-body">
 
+
+                <div className="form-group">
+                  <div className="form-row">
+                    <div className="form-group col-md text-info ">
+                      <b>OMP Nro: <span id='txtNro'></span></b><br></br>
+                      Status: <span id='txtStatus'></span>
+
+                    </div>
+                    <div className="form-group col-md text-secondary right ">
+
+                    </div>
+                  </div>
+                </div>
+
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group col-md">
-                      <label htmlFor="txtTitulo">Título</label><span className="required"> *</span>
+                      <label htmlFor="txtTitulo">Síntese</label><span className="required"> *</span>
                       <input type="text" className="form-control" id="txtTitulo" />
                     </div>
                   </div>
@@ -874,7 +946,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                       })}
                     </div>
                     <div className="form-group col-md">
-                      <label htmlFor="checkAssitenciaTecnica">Assistência técnica</label><span className="required"> *</span>
+                      <label htmlFor="checkAssitenciaTecnica">Assistência técnica</label>
                       {this.state.itemsAssistenciaTecnica.map((item, key) => {
 
                         return (
@@ -895,7 +967,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="txtDadosProposta">Observação</label><span className="required"> *</span>
+                  <label htmlFor="txtDadosProposta">Observação</label>
                   <div id='richTextObservacao'>
                     <RichText className="editorRichTex" value=""
                       onChange={(text) => this.onTextChangeObservacao(text)} />
@@ -1003,8 +1075,8 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                     <>
 
                       <div className='textoDireita'>
-                        <span title='Excluir' className='cursorPointer' onClick={(e) => this.excluirConjuntoSubconjunto(item.ID, "Conjunto")}><FontAwesomeIcon icon={faTrash} /></span>&nbsp;
-                        <span title='Editar' className='cursorPointer' onClick={(e) => this.abrirModalEditarConjuntos(item.ID, item.PIE, item.Title, item.PATS, item.DescricaoPATS, item.Atual, item.VersaoAtual, item.CSAtual, item.Nova, item.VersaoNova, item.CSNova, item.DisposicaoEstoque, item.DisposicaoEstoqueEscolha, item.DisposicaoFornecedor, item.DisposicaoFornecedorEscolha, item.DisposicaoEmtransito, item.DisposicaoEmtransitoEscolha, item.HistoricoAlteracao, item.PontoCorte)}><FontAwesomeIcon icon={faEdit} /></span>
+                        <span title='Excluir' className='cursorPointer btnEdicaoLista' onClick={(e) => this.excluirConjuntoSubconjunto(item.ID, "Conjunto")}><FontAwesomeIcon icon={faTrash} /></span>&nbsp;
+                        <span title='Editar' className='cursorPointer btnEdicaoLista' onClick={(e) => this.abrirModalEditarConjuntos(item.ID, item.PIE, item.Title, item.PATS, item.DescricaoPATS, item.Atual, item.VersaoAtual, item.CSAtual, item.Nova, item.VersaoNova, item.CSNova, item.DisposicaoEstoque, item.DisposicaoEstoqueEscolha, item.DisposicaoFornecedor, item.DisposicaoFornecedorEscolha, item.DisposicaoEmtransito, item.DisposicaoEmtransitoEscolha)}><FontAwesomeIcon icon={faEdit} /></span>
                       </div>
 
                       <div className='padding10 col-md border m-1 bg-light text-dark rounded'>
@@ -1087,11 +1159,9 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                               Estoque<br></br>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Revisão<br></br>
                               <span className="text-info" id='txtDisposicaoEstoque'>{item.DisposicaoEstoque}</span>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Versão<br></br>
                               <span className="text-info" id='txtDisposicaoEstoqueEscolha'>{item.DisposicaoEstoqueEscolha}</span>
                             </div>
                           </div>
@@ -1103,11 +1173,9 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                               Fornecedor<br></br>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Disposição<br></br>
                               <span className="text-info" id='txtDisposicaoFornecedor'>{item.DisposicaoFornecedor}</span>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Escolha<br></br>
                               <span className="text-info" id='txtDisposicaoFornecedorEscolha'>{item.DisposicaoFornecedorEscolha}</span>
                             </div>
                           </div>
@@ -1119,34 +1187,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                               Em trânsito<br></br>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Disposição<br></br>
                               <span className="text-info" id='txtDisposicaoEmtransito'>{item.DisposicaoEmtransito}</span>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Escolha<br></br>
                               <span className="text-info" id='txtDisposicaoEmtransitoEscolha'>{item.DisposicaoEmtransitoEscolha}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="form-row">
-                            <div className="form-group labelConjuntosSubconjutos ">
-                              Histórico<br></br>
-                            </div>
-                            <div className="form-group col-md border m-1">
-                              <span className="text-info" id='txtHistoricoAlteracao'>{item.HistoricoAlteracao}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="form-row">
-                            <div className="form-group labelConjuntosSubconjutos ">
-                              Ponto de Corte<br></br>
-                            </div>
-                            <div className="form-group col-md border m-1">
-                              <span className="text-info" id='txtPontoCorte'>{item.PontoCorte}</span>
                             </div>
                           </div>
                         </div>
@@ -1180,8 +1224,8 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                     <>
 
                       <div className='textoDireita'>
-                        <span title='Excluir' className='cursorPointer' onClick={(e) => this.excluirConjuntoSubconjunto(item.ID, "Subconjunto")}><FontAwesomeIcon icon={faTrash} /></span>&nbsp;
-                        <span title='Editar' className='cursorPointer' onClick={(e) => this.abrirModalEditarSubConjuntos(item.ID, item.PIE, item.Title, item.PATS, item.DescricaoPATS, item.Atual, item.VersaoAtual, item.CSAtual, item.Nova, item.VersaoNova, item.CSNova, item.DisposicaoEstoque, item.DisposicaoEstoqueEscolha, item.DisposicaoFornecedor, item.DisposicaoFornecedorEscolha, item.DisposicaoEmtransito, item.DisposicaoEmtransitoEscolha, item.HistoricoAlteracao, item.PontoCorte)}><FontAwesomeIcon icon={faEdit} /></span>
+                        <span title='Excluir' className='cursorPointer btnEdicaoLista' onClick={(e) => this.excluirConjuntoSubconjunto(item.ID, "Subconjunto")}><FontAwesomeIcon icon={faTrash} /></span>&nbsp;
+                        <span title='Editar' className='cursorPointer btnEdicaoLista' onClick={(e) => this.abrirModalEditarSubConjuntos(item.ID, item.PIE, item.Title, item.PATS, item.DescricaoPATS, item.Atual, item.VersaoAtual, item.CSAtual, item.Nova, item.VersaoNova, item.CSNova, item.DisposicaoEstoque, item.DisposicaoEstoqueEscolha, item.DisposicaoFornecedor, item.DisposicaoFornecedorEscolha, item.DisposicaoEmtransito, item.DisposicaoEmtransitoEscolha)}><FontAwesomeIcon icon={faEdit} /></span>
                       </div>
 
                       <div className='padding10 col-md border m-1 bg-light text-dark rounded'>
@@ -1264,11 +1308,9 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                               Estoque<br></br>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Revisão<br></br>
                               <span className="text-info" id='txtTipo'>{item.DisposicaoEstoque}</span>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Versão<br></br>
                               <span className="text-info" id='txtSintese'>{item.DisposicaoEstoqueEscolha}</span>
                             </div>
                           </div>
@@ -1280,11 +1322,9 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                               Fornecedor<br></br>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Disposição<br></br>
                               <span className="text-info" id='txtTipo'>{item.DisposicaoFornecedor}</span>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Escolha<br></br>
                               <span className="text-info" id='txtSintese'>{item.DisposicaoFornecedorEscolha}</span>
                             </div>
                           </div>
@@ -1296,38 +1336,13 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                               Em trânsito<br></br>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Disposição<br></br>
                               <span className="text-info" id='txtTipo'>{item.DisposicaoEmtransito}</span>
                             </div>
                             <div className="form-group col-md border m-1">
-                              Escolha<br></br>
                               <span className="text-info" id='txtSintese'>{item.DisposicaoEmtransitoEscolha}</span>
                             </div>
                           </div>
                         </div>
-
-                        <div>
-                          <div className="form-row">
-                            <div className="form-group labelConjuntosSubconjutos ">
-                              Histórico<br></br>
-                            </div>
-                            <div className="form-group col-md border m-1">
-                              <span className="text-info" id='txtTipo'>{item.HistoricoAlteracao}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="form-row">
-                            <div className="form-group labelConjuntosSubconjutos ">
-                              Ponto de Corte<br></br>
-                            </div>
-                            <div className="form-group col-md border m-1">
-                              <span className="text-info" id='txtPontoCorte'>{item.PontoCorte}</span>
-                            </div>
-                          </div>
-                        </div>
-
 
                       </div></>
                   );
@@ -1390,6 +1405,81 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
           </div>
 
           <div className="card">
+            <div className="card-header btn" id="headingAprovadores" data-toggle="collapse" data-target="#collapseAprovadores" aria-expanded="true" aria-controls="collapseAprovadores">
+              <h5 className="mb-0 text-info">
+                Aprovadores
+              </h5>
+            </div>
+            <div id="collapseAprovadores" className="collapse show" aria-labelledby="headingOne">
+              <div className="card-body">
+
+                <div className="form-group">
+                  <div className="form-row">
+                    <div className="form-group col-md">
+                      <label htmlFor="ddlResponsavelTecnico">Responsável técnico</label><span className="required"> *</span>
+
+                      <select id="ddlResponsavelTecnico" className="form-control" value={this.state.valorResponsavelTecnico} onChange={(e) => this.onChangeResponsavelTecnico(e.target.value)}>
+                        <option value="0" selected>Selecione...</option>
+                        {this.state.itemsAprovadores.map(function (item, key) {
+                          return (
+                            <option value={item.Id}>{item.Title}</option>
+                          );
+                        })}
+                      </select>
+
+                    </div>
+                    <div className="form-group col-md">
+                      <label htmlFor="ddlResponsavelArea">Responsável da área</label><span className="required"> *</span>
+
+                      <select id="ddlResponsavelArea" className="form-control" value={this.state.valorResponsavelArea} onChange={(e) => this.onChangeResponsavelArea(e.target.value)}>
+                        <option value="0" selected>Selecione...</option>
+                        {this.state.itemsAprovadores.map(function (item, key) {
+                          return (
+                            <option value={item.Id}>{item.Title}</option>
+                          );
+                        })}
+                      </select>
+
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <div className="form-row">
+                    <div className="form-group col-md">
+                      <label htmlFor="ddlAreaExecutoraFabrica">Área executora fábrica</label><span className="required"> *</span>
+
+                      <select id="ddlAreaExecutoraFabrica" className="form-control" value={this.state.valorAreaExecutoraFabrica} onChange={(e) => this.onChangeAreaExecutoraFabrica(e.target.value)}>
+                        <option value="0" selected>Selecione...</option>
+                        {this.state.itemsAprovadores.map(function (item, key) {
+                          return (
+                            <option value={item.Id}>{item.Title}</option>
+                          );
+                        })}
+                      </select>
+
+                    </div>
+                    <div className="form-group col-md">
+                      <label htmlFor="ddlAreaExecutoraAT">Área executora AT</label><span className="required"> *</span>
+
+                      <select id="ddlAreaExecutoraAT" className="form-control" value={this.state.valorAreaExecutoraAT} onChange={(e) => this.onChangeAreaExecutoraAT(e.target.value)}>
+                        <option value="0" selected>Selecione...</option>
+                        {this.state.itemsAprovadores.map(function (item, key) {
+                          return (
+                            <option value={item.Id}>{item.Title}</option>
+                          );
+                        })}
+                      </select>
+
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
             <div className="card-header btn" id="headingAnexos" data-toggle="collapse" data-target="#collapseAnexos" aria-expanded="true" aria-controls="collapseAnexos">
               <h6 className="mb-0 text-info" >
                 Anexos
@@ -1437,17 +1527,17 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                       })}
                       {this.state.itemsListAnexos.map((item, key) => {
 
-                        _pos++;
-                        var txtAnexoItem = "anexoItem" + _pos;
-                        var btnExcluirAnexoitem = "btnExcluirAnexoitem" + _pos;
+                        _pos2++;
+                        //var txtAnexoItem = "anexoItem" + _pos;
+                        //var btnExcluirAnexoitem = "btnExcluirAnexoitem" + _pos;
 
-                        var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Documentos')/items('${_idOMP}')/AttachmentFiles`;
-                        url = this.props.siteurl;
+                        //var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Documentos')/items('${_idOMP}')/AttachmentFiles`;
+                        //url = this.props.siteurl;
 
                         var caminho = item.ServerRelativeUrl;
 
-                        var idBotao = `btnExcluirAnexo2${_pos2}`;
-                        var idImagem = `anexo2${_pos2}`;
+                        var btnExcluirAnexo2 = `btnExcluirAnexo2${_pos2}`;
+                        var txtAnexoItem2 = `anexo2${_pos2}`;
 
                         var relativeURL = window.location.pathname;
                         var url = window.location.pathname;
@@ -1456,7 +1546,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
                         return (
 
-                          <><a id={idImagem} target='_blank' data-interception="off" href={caminho} title="">{item.Name}</a><a style={{ "cursor": "pointer" }} onClick={() => this.excluirAnexo(`${strRelativeURL}/Anexos/${_documentoNumero}`, `${item.Name}`, `${idImagem}`, `${idBotao}`)} id={idBotao}>&nbsp;Excluir</a><br></br></>
+                          <><a id={txtAnexoItem2} target='_blank' data-interception="off" href={caminho} title="">{item.Name}</a><a style={{ "cursor": "pointer" }} onClick={() => this.excluirAnexo(`${strRelativeURL}/Anexos/${_documentoNumero}`, `${item.Name}`, `${txtAnexoItem2}`, `${btnExcluirAnexo2}`)} id={btnExcluirAnexo2}>&nbsp;Excluir</a><br></br></>
 
                         );
 
@@ -1473,7 +1563,9 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
           <br></br>
 
           <div className="text-right">
-            <button id="btnValidarSalvar" className="btn btn-success">Salvar</button>
+            <button style={{ "margin": "2px" }} type="submit" id="btnVoltar" className="btn btn-secondary">Voltar</button>
+            <button style={{ "margin": "2px" }} id="btnValidarSalvar" className="btn btn-success">Salvar</button>
+            <button style={{ "margin": "2px" }} id="btnValidarEnviarAprovacao" className="btn btn-success">Enviar Aprovação</button>
           </div>
 
         </div>
@@ -1495,11 +1587,33 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button id="btnSalvar" type="button" className="btn btn-primary">Salvar</button>
+                <button id="btnSalvar" type="button" className="btn btn-primary">Sim</button>
               </div>
             </div>
           </div>
         </div>
+
+        <div className="modal fade" id="modalConfirmarEnviarAprovacao" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Confirmação</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                Deseja realmente enviar para aprovação?
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnEnviarAprovacao" type="button" className="btn btn-primary">Sim</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
 
         <div className="modal fade" id="modalCarregando" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div>
@@ -1522,6 +1636,22 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
               </div>
               <div className="modal-footer">
                 <button type="button" id="btnSucesso" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoEnviarAprovacao" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                OMP enviada para aprovação!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoEnviarAprovacao" className="btn btn-primary">OK</button>
               </div>
             </div>
           </div>
@@ -1639,8 +1769,8 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
                 <div className="form-row">
                   <div className="form-group col-md">
-                    <label htmlFor="txtDisposicaoEstoque">Disposição - Estoque</label><br></br>
-                    <input type="text" className="form-control" id="txtDisposicaoEstoque" />
+                    <label htmlFor="txtDisposicaoEstoqueConjuntos">Disposição - Estoque</label><br></br>
+                    <input type="text" className="form-control" id="txtDisposicaoEstoqueConjuntos" />
                   </div>
                   <div className="form-group col-md">
                     <label htmlFor="ddlDisposicaoEstoqueAcao">Disposição - Estoque (Ação)</label><br></br>
@@ -1657,8 +1787,8 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
                 <div className="form-row">
                   <div className="form-group col-md">
-                    <label htmlFor="txtDisposicaoFornecedor">Disposicão - Fornecedor</label><br></br>
-                    <input type="text" className="form-control" id="txtDisposicaoFornecedor" />
+                    <label htmlFor="txtDisposicaoFornecedorConjuntos">Disposicão - Fornecedor</label><br></br>
+                    <input type="text" className="form-control" id="txtDisposicaoFornecedorConjuntos" />
                   </div>
                   <div className="form-group col-md">
                     <label htmlFor="ddlDisposicaoFornecedorAcao">Disposicão - Fornecedor (Ação)</label><br></br>
@@ -1675,8 +1805,8 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
                 <div className="form-row">
                   <div className="form-group col-md">
-                    <label htmlFor="txtDisposicaoEmTransito">Disposicão - Em trânsito</label><br></br>
-                    <input type="text" className="form-control" id="txtDisposicaoEmTransito" />
+                    <label htmlFor="txtDisposicaoEmTransitoConjuntos">Disposicão - Em trânsito</label><br></br>
+                    <input type="text" className="form-control" id="txtDisposicaoEmTransitoConjuntos" />
                   </div>
                   <div className="form-group col-md">
                     <label htmlFor="ddlDisposicaoEmTransitoAcao">Disposicão - Em trânsito (Ação)</label><br></br>
@@ -1690,18 +1820,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                     </select>
                   </div>
                 </div>
-
-                <div className="form-row">
-                  <div className="form-group col-md-9">
-                    <label htmlFor="txtHistoricoAlteracoes">Histórico de alteracões</label><br></br>
-                    <input type="text" className="form-control" id="txtHistoricoAlteracoes" />
-                  </div>
-                  <div className="form-group col-md-3">
-                    <label htmlFor="dtPontoCorte">Ponto de Corte</label><br></br>
-                    <InputMask mask="99/99/9999" className="form-control" maskChar="_" id="dtPontoCorte" />
-                  </div>
-                </div>
-
 
               </div>
               <div className="modal-footer">
@@ -1841,17 +1959,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                         );
                       })}
                     </select>
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group col-md-9">
-                    <label htmlFor="txtHistoricoAlteracoes-SubConjuntos">Histórico de alteracões</label><br></br>
-                    <input type="text" className="form-control" id="txtHistoricoAlteracoes-SubConjuntos" />
-                  </div>
-                  <div className="form-group col-md-3">
-                    <label htmlFor="dtPontoCorte">Ponto de Corte</label><br></br>
-                    <InputMask mask="99/99/9999" className="form-control" maskChar="_" id="dtPontoCorte-SubConjuntos" />
                   </div>
                 </div>
 
@@ -1995,21 +2102,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group col-md-9">
-                    <label htmlFor="txtHistoricoAlteracoes-Editar">Histórico de alteracões</label><br></br>
-                    <input type="text" className="form-control" id="txtHistoricoAlteracoes-Editar" />
-                  </div>
-                  <div className="form-group col-md-3">
-                    <label htmlFor="dtPontoCorte-Editar">Ponto de Corte</label><br></br>
-                    <InputMask mask="99/99/9999" className="form-control" id="dtPontoCorte-Editar" />
-                  </div>
-                </div>
-
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button id="btnEditarConjunto" className="btn btn-success">Editar</button>
+                <button id="btnEditarConjunto" className="btn btn-success">Salvar</button>
               </div>
             </div>
           </div>
@@ -2146,21 +2242,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-group col-md-9">
-                    <label htmlFor="txtHistoricoAlteracoes-Editar-SubConjuntos">Histórico de alteracões</label><br></br>
-                    <input type="text" className="form-control" id="txtHistoricoAlteracoes-Editar-SubConjuntos" />
-                  </div>
-                  <div className="form-group col-md-3">
-                    <label htmlFor="dtPontoCorte-Editar-SubConjuntos">Ponto de Corte</label><br></br>
-                    <InputMask mask="99/99/9999" className="form-control" id="dtPontoCorte-Editar-SubConjuntos" />
-                  </div>
-                </div>
-
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button id="btnEditarSubConjunto" className="btn btn-success">Editar</button>
+                <button id="btnEditarSubConjunto" className="btn btn-success">Salvar</button>
               </div>
             </div>
           </div>
@@ -2821,7 +2906,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var reactHandlerAprovadores = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/Web/SiteGroups/GetByName('OMP - Aprovadores')/users`,
+      url: `${this.props.siteurl}/_api/Web/SiteGroups/GetByName('OMP - Aprovadores')/users?$filter=Title ne 'System Account'`,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -2982,6 +3067,9 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             var documentosOrigem = resultData.d.results[i].DocumentosOrigem;
             _pastaCriada = resultData.d.results[i].PastaCriada;
 
+            var status = resultData.d.results[i].Status;
+            _status = status;
+
             var itemNovo = resultData.d.results[i].siteNovoSPOnline;
 
             var responsavelArea = "";
@@ -2995,6 +3083,11 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
               responsavelTecnico = resultData.d.results[i].ResponsavelTecnico.ID;
               areaExecutoraFabrica = resultData.d.results[i].AreaExecutoraFabrica.ID;
               areaExecutoraAT = resultData.d.results[i].AreaExecutoraAT.ID;
+
+              _aprovadores.push(responsavelTecnico);
+              _aprovadores.push(responsavelArea);
+              _aprovadores.push(areaExecutoraFabrica);
+              _aprovadores.push(areaExecutoraAT);
 
             } else {
 
@@ -3118,7 +3211,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
 
 
-            var alteracoes = resultData.d.results[i].SolucaoEncontrada;
+            var alteracoes = resultData.d.results[i].Alteracoes;
             var txtAlteracoes = "";
 
             if (alteracoes != null) {
@@ -3145,7 +3238,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             jQuery('#richTextAlteracoes').find('.ql-editor').html(`${txtAlteracoes}`);
 
 
-            var documentosAlterados = resultData.d.results[i].SolucaoEncontrada;
+            var documentosAlterados = resultData.d.results[i].DocumentosAlterados;
             var txtDocumentosAlterados = "";
 
             if (documentosAlterados != null) {
@@ -3170,13 +3263,30 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             }
 
             jQuery('#richTextDocumentosAlterados').find('.ql-editor').html(`${txtDocumentosAlterados}`);
-
-            ////////////////
-            var status = resultData.d.results[i].Status;
-
             jQuery("#txtTitulo").val(sintese);
             jQuery("#txtDocumentosOrigem").val(documentosOrigem);
+            jQuery("#txtNro").html(numero);
+            jQuery("#txtStatus").html(status);
 
+
+          }
+
+          console.log("_grupos", _grupos);
+
+          if (_grupos.indexOf("OMP - Elaboradores") !== -1) {
+
+            jQuery("#btnValidarSalvar").show();
+
+            if (status == "Em elaboração") {
+
+              jQuery("#btnValidarEnviarAprovacao").show();
+
+              jQuery("#ddlResponsavelTecnico").prop("disabled", false);
+              jQuery("#ddlResponsavelArea").prop("disabled", false);
+              jQuery("#ddlAreaExecutoraFabrica").prop("disabled", false);
+              jQuery("#ddlAreaExecutoraAT").prop("disabled", false);
+
+            }
 
           }
 
@@ -3307,10 +3417,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var documentosAlterados = _documentosAlterados;
     var documentosOrigem = $("#txtDocumentosOrigem").val();;
 
-    //var responsavelTecnico = $("#ddlResponsavelTecnico").val();
-    //var responsavelArea = $("#ddlResponsavelArea").val();
-    //var areaExecutoraFabrica = $("#ddlAreaExecutoraFabrica").val();
-    //var areaExecutoraAT = $("#ddlAreaExecutoraAT").val();
+    var responsavelTecnico = $("#ddlResponsavelTecnico").val();
+    var responsavelArea = $("#ddlResponsavelArea").val();
+    var areaExecutoraFabrica = $("#ddlAreaExecutoraFabrica").val();
+    var areaExecutoraAT = $("#ddlAreaExecutoraAT").val();
 
     var arrProducao = [];
     $.each($("input[name='checkProducao']:checked"), function () {
@@ -3358,19 +3468,11 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       return false;
     }
 
-    if (arrAssistenciaTecnica.length == 0) {
-      alert("Escolha pelo menos uma opção para Assistência Técnica!");
-      document.getElementById('headingCriteriosImplantacao').scrollIntoView();
-      return false;
-    }
-
-
     if ((observacao == "") || (observacao == "<p><br></p>")) {
       alert("Forneça uma observação!");
       document.getElementById('headingCriteriosImplantacao').scrollIntoView();
       return false;
     }
-
 
     if ((descricaoProblema == "") || (descricaoProblema == "<p><br></p>")) {
       alert("Forneça uma descrição para o problema!");
@@ -3403,37 +3505,61 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     }
 
 
-    // if (responsavelTecnico == 0) {
-    //   alert("Forneça o responsável técnico!");
-    //   document.getElementById('headingAprovadores').scrollIntoView();
-    //   return false;
-    // }
+    if (responsavelTecnico == 0) {
+      alert("Forneça o responsável técnico!");
+      document.getElementById('headingAprovadores').scrollIntoView();
+      return false;
+    }
 
-    // if (responsavelArea == 0) {
-    //   alert("Forneça o Responsável da Área!");
-    //   document.getElementById('headingAprovadores').scrollIntoView();
-    //   return false;
-    // }
+    if (responsavelArea == 0) {
+      alert("Forneça o Responsável da Área!");
+      document.getElementById('headingAprovadores').scrollIntoView();
+      return false;
+    }
 
-    // if (areaExecutoraFabrica == 0) {
-    //   alert("Forneça o Responsável da Fábrica!");
-    //   document.getElementById('headingAprovadores').scrollIntoView();
-    //   return false;
-    // }
+    if (areaExecutoraFabrica == 0) {
+      alert("Forneça o Responsável da Fábrica!");
+      document.getElementById('headingAprovadores').scrollIntoView();
+      return false;
+    }
 
-    // if (areaExecutoraAT == 0) {
-    //   alert("Forneça a Área Executora AT!");
-    //   document.getElementById('headingAprovadores').scrollIntoView();
-    //   return false;
-    // }
+    if (areaExecutoraAT == 0) {
+      alert("Forneça a Área Executora AT!");
+      document.getElementById('headingAprovadores').scrollIntoView();
+      return false;
+    }
+
+    var files = (document.querySelector("#input") as HTMLInputElement).files;
+    var size: number = 0;
+
+    if (files.length > 0) {
+
+      console.log("files.length", files.length);
+
+      for (var i = 0; i <= files.length - 1; i++) {
+
+        var fsize = files.item(i).size;
+        size = size + fsize;
+
+        console.log("fsize", fsize);
+
+      }
+
+      if (size > 15000000) {
+        alert("A soma dos arquivos não pode ser maior que 15mega!");
+        size = 0;
+        return false;
+      }
+
+    }
 
 
     if (opcao == "Salvar") {
       jQuery("#modalConfirmarSalvar").modal({ backdrop: 'static', keyboard: false });
     }
 
-    else if (opcao == "Salvar") {
-      jQuery("#modalConfirmarSalvar").modal({ backdrop: 'static', keyboard: false });
+    else if (opcao == "Aprovar") {
+      jQuery("#modalConfirmarEnviarAprovacao").modal({ backdrop: 'static', keyboard: false });
     }
 
 
@@ -3455,10 +3581,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     var documentosAlterados = _documentosAlterados;
     var documentosOrigem = $("#txtDocumentosOrigem").val();
 
-    //var responsavelTecnico = $("#ddlResponsavelTecnico").val();
-    //var responsavelArea = $("#ddlResponsavelArea").val();
-    //var areaExecutoraFabrica = $("#ddlAreaExecutoraFabrica").val();
-    //var areaExecutoraAT = $("#ddlAreaExecutoraAT").val();
+    var responsavelTecnico = $("#ddlResponsavelTecnico").val();
+    var responsavelArea = $("#ddlResponsavelArea").val();
+    var areaExecutoraFabrica = $("#ddlAreaExecutoraFabrica").val();
+    var areaExecutoraAT = $("#ddlAreaExecutoraAT").val();
 
     var arrProducao = [];
     $.each($("input[name='checkProducao']:checked"), function () {
@@ -3469,6 +3595,11 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     $.each($("input[name='checkAssitenciaTecnica']:checked"), function () {
       arrAssistenciaTecnica.push($(this).val());
     });
+
+    var statusNovo;
+
+    if (opcao == "Salvar") statusNovo = _status;
+    else if (opcao == "Aprovar") statusNovo = "Aguardando aprovações";
 
     await _web.lists
       .getByTitle("Ordem de Modificação de Produto")
@@ -3485,10 +3616,11 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
         Alteracoes: alteracoes,
         DocumentosAlterados: documentosAlterados,
         DocumentosOrigem: documentosOrigem,
-        //ResponsavelTecnicoId: responsavelTecnico,
-        //ResponsavelAreaId: responsavelArea,
-        //AreaExecutoraFabricaId: areaExecutoraFabrica,
-        //AreaExecutoraATId: areaExecutoraAT,
+        Status: statusNovo,
+        ResponsavelTecnicoId: responsavelTecnico,
+        ResponsavelAreaId: responsavelArea,
+        AreaExecutoraFabricaId: areaExecutoraFabrica,
+        AreaExecutoraATId: areaExecutoraAT,
 
       })
       .then(async response => {
@@ -3503,7 +3635,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
   }
 
 
-  protected upload(opcao) {
+  protected async upload(opcao): Promise<void> {
 
     console.log("Entrou no upload");
 
@@ -3552,6 +3684,17 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
                         }
 
+                        else if (opcao == "Aprovar") {
+
+                          for (var i = 0; i < _aprovadores.length; i++) {
+                            await this.criarTarefa(_aprovadores[i], _aprovadorFuncao[i]);
+                          }
+
+                          $("#modalCarregando").modal('hide');
+                          jQuery("#modalSucessoEnviarAprovacao").modal({ backdrop: 'static', keyboard: false });
+
+                        }
+
                       }
 
                     })
@@ -3571,7 +3714,11 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
       } else {
 
+        console.log("pasta ja criada");
+
         for (var i = 0; i < files.length; i++) {
+
+          console.log("i1", i);
 
           var nomeArquivo = files[i].name;
           var rplNomeArquivo = nomeArquivo.replace(/[^0123456789.,a-zA-Z]/g, '');
@@ -3586,12 +3733,33 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
               data.file.getItem().then(async item => {
                 var idAnexo = item.ID;
 
+                console.log("i2", i);
+                console.log("files.length", files.length);
+
                 if (i == files.length) {
+
                   console.log("anexou:" + rplNomeArquivo);
 
+                  console.log("opcao", opcao);
+
                   if (opcao == "Salvar") {
+
+                    console.log("entrou no salvar");
+
                     $("#modalCarregando").modal('hide');
                     jQuery("#modalSucesso").modal({ backdrop: 'static', keyboard: false });
+
+                  }
+
+                  else if (opcao == "Aprovar") {
+
+                    for (var x = 0; x < _aprovadores.length; x++) {
+                      await this.criarTarefa(_aprovadores[x], _aprovadorFuncao[x]);
+                    }
+
+                    $("#modalCarregando").modal('hide');
+                    jQuery("#modalSucessoEnviarAprovacao").modal({ backdrop: 'static', keyboard: false });
+
                   }
 
 
@@ -3618,10 +3786,24 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
             })
             .then(async response => {
 
+
+
               if (opcao == "Salvar") {
 
+                console.log("entrou ocpao");
                 $("#modalCarregando").modal('hide');
                 jQuery("#modalSucesso").modal({ backdrop: 'static', keyboard: false });
+
+              }
+
+              else if (opcao == "Aprovar") {
+
+                for (var i = 0; i < _aprovadores.length; i++) {
+                  await this.criarTarefa(_aprovadores[i], _aprovadorFuncao[i]);
+                }
+
+                $("#modalCarregando").modal('hide');
+                jQuery("#modalSucessoEnviarAprovacao").modal({ backdrop: 'static', keyboard: false });
 
               }
 
@@ -3640,6 +3822,16 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
           $("#modalCarregando").modal('hide');
           jQuery("#modalSucesso").modal({ backdrop: 'static', keyboard: false });
 
+        }
+
+        else if (opcao == "Aprovar") {
+
+          for (var i = 0; i < _aprovadores.length; i++) {
+            await this.criarTarefa(_aprovadores[i], _aprovadorFuncao[i]);
+          }
+
+          $("#modalCarregando").modal('hide');
+          jQuery("#modalSucessoEnviarAprovacao").modal({ backdrop: 'static', keyboard: false });
 
         }
 
@@ -3666,15 +3858,12 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       var novaRevisao = $("#ddlNovaRevisao").val();
       var versaoNovaRevisao = $("#txtVersaoNovaRevisao").val();
       var CSNovaRevisao = $("#txtCSNovaRevisao").val();
-      var disposicaoEstoque = $("#txtDisposicaoEstoque").val();
+      var disposicaoEstoque = $("#txtDisposicaoEstoqueConjuntos").val();
       var disposicaoEstoqueAcao = $("#ddlDisposicaoEstoqueAcao").val();
-      var disposicaoFornecedor = $("#txtDisposicaoFornecedor").val();
+      var disposicaoFornecedor = $("#txtDisposicaoFornecedorConjuntos").val();
       var disposicaoFornecedorAcao = $("#ddlDisposicaoFornecedorAcao").val();
-      var disposicaoEmTransito = $("#txtDisposicaoEmTransito").val();
+      var disposicaoEmTransito = $("#txtDisposicaoEmTransitoConjuntos").val();
       var disposicaoEmTransitoAcao = $("#ddlDisposicaoEmTransitoAcao").val();
-      var historicoAlteracoes = $("#txtHistoricoAlteracoes").val();
-      var pontoCorte = jQuery("#dtPontoCorte").val();
-
     }
 
     else if (tipo == "Subconjunto") {
@@ -3698,8 +3887,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       var disposicaoFornecedorAcao = $("#ddlDisposicaoFornecedorAcao-SubConjuntos").val();
       var disposicaoEmTransito = $("#txtDisposicaoEmTransito-SubConjuntos").val();
       var disposicaoEmTransitoAcao = $("#ddlDisposicaoEmTransitoAcao-SubConjuntos").val();
-      var historicoAlteracoes = $("#txtHistoricoAlteracoes-SubConjuntos").val();
-      var pontoCorte = jQuery("#dtPontoCorte-SubConjuntos").val();
 
     }
 
@@ -3722,8 +3909,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     }
 
 
-    console.log("pontoCorte", pontoCorte);
-
     await _web.lists
       .getByTitle("Conjuntos e Subconjuntos")
       .items.add({
@@ -3745,8 +3930,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
         DisposicaoFornecedorEscolha: disposicaoFornecedorAcao,
         DisposicaoEmtransito: disposicaoEmTransito,
         DisposicaoEmtransitoEscolha: disposicaoEmTransitoAcao,
-        HistoricoAlteracao: historicoAlteracoes,
-        PontoCorte: pontoCorte
       })
       .then(response => {
 
@@ -3774,7 +3957,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
 
   }
-
 
   protected async cadastrarPontoCorte() {
 
@@ -3841,7 +4023,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
 
   }
-
 
   protected async cadastrarAssistenciaTecnica() {
 
@@ -3982,7 +4163,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
   }
 
-
   protected async editarAssistenciaTecnica() {
 
     jQuery("#btnEditarAssistenciaTecnica").prop("disabled", true);
@@ -4052,9 +4232,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
 
   }
-
-
-
 
   protected async editarPontoCorte() {
 
@@ -4150,8 +4327,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       var disposicaoFornecedorAcao = $("#ddlDisposicaoFornecedorAcao-Editar").val();
       var disposicaoEmTransito = $("#txtDisposicaoEmTransito-Editar").val();
       var disposicaoEmTransitoAcao = $("#ddlDisposicaoEmTransitoAcao-Editar").val();
-      var historicoAlteracoes = $("#txtHistoricoAlteracoes-Editar").val();
-      var pontoCorte = jQuery("#dtPontoCorte-Editar").val();
 
     }
 
@@ -4175,8 +4350,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       var disposicaoFornecedorAcao = $("#ddlDisposicaoFornecedorAcao-Editar-SubConjuntos").val();
       var disposicaoEmTransito = $("#txtDisposicaoEmTransito-Editar-SubConjuntos").val();
       var disposicaoEmTransitoAcao = $("#ddlDisposicaoEmTransitoAcao-Editar-SubConjuntos").val();
-      var historicoAlteracoes = $("#txtHistoricoAlteracoes-Editar-SubConjuntos").val();
-      var pontoCorte = jQuery("#dtPontoCorte-Editar-SubConjuntos").val();
 
     }
 
@@ -4217,8 +4390,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
         DisposicaoFornecedorEscolha: disposicaoFornecedorAcao,
         DisposicaoEmtransito: disposicaoEmTransito,
         DisposicaoEmtransitoEscolha: disposicaoEmTransitoAcao,
-        HistoricoAlteracao: historicoAlteracoes,
-        PontoCorte: pontoCorte
       })
       .then(response => {
 
@@ -4355,11 +4526,21 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     });
   }
 
-  protected async fecharSucesso() {
+  protected async fecharSucesso(opcao) {
 
     jQuery("#modalSucesso").modal('hide');
-    window.location.href = `OMP-Editar.aspx?DocumentoID=` + _idOMP;
 
+    if (opcao == "Salvar") {
+
+      window.location.href = `OMP-Editar.aspx?DocumentoID=${_idOMP}&DocumentoNumero=${_documentoNumero}`;
+
+    }
+
+    else if (opcao == "Aprovar") {
+
+      window.location.href = `OMP-Todas.aspx`;
+
+    }
   }
 
   protected async sucessoConjuntos(opcao) {
@@ -4373,6 +4554,22 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       success: function (resultData) {
         reactItemsConjuntos.setState({
           itemsConjuntos: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+    var reactPIE = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=4999&$filter=OMP/ID eq ${_idOMP} and PIE ne null&$orderby= PIE`,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        reactPIE.setState({
+          itemsPIE: resultData.d.results
         });
       },
       error: function (jqXHR, textStatus, errorThrown) {
@@ -4397,6 +4594,22 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
       success: function (resultData) {
         reactItemsSubConjuntos.setState({
           itemsSubConjuntos: resultData.d.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+    var reactPIE = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Conjuntos e Subconjuntos')/items?$top=4999&$filter=OMP/ID eq ${_idOMP} and PIE ne null&$orderby= PIE`,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        reactPIE.setState({
+          itemsPIE: resultData.d.results
         });
       },
       error: function (jqXHR, textStatus, errorThrown) {
@@ -4587,7 +4800,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
   }
 
-  protected async abrirModalEditarConjuntos(ID, PIE, Title, PATS, DescricaoPATS, Atual, VersaoAtual, CSAtual, Nova, VersaoNova, CSNova, DisposicaoEstoque, DisposicaoEstoqueEscolha, DisposicaoFornecedor, DisposicaoFornecedorEscolha, DisposicaoEmtransito, DisposicaoEmtransitoEscolha, HistoricoAlteracao, PontoCorte) {
+  protected async abrirModalEditarConjuntos(ID, PIE, Title, PATS, DescricaoPATS, Atual, VersaoAtual, CSAtual, Nova, VersaoNova, CSNova, DisposicaoEstoque, DisposicaoEstoqueEscolha, DisposicaoFornecedor, DisposicaoFornecedorEscolha, DisposicaoEmtransito, DisposicaoEmtransitoEscolha) {
 
     _idConjunto = ID;
     jQuery("#txtCodigoPIE-Editar").val(PIE);
@@ -4603,9 +4816,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     jQuery("#txtDisposicaoEstoque-Editar").val(DisposicaoEstoque);
     jQuery("#txtDisposicaoFornecedor-Editar").val(DisposicaoFornecedor);
     jQuery("#txtDisposicaoEmTransito-Editar").val(DisposicaoEmtransito);
-    jQuery("#txtHistoricoAlteracoes-Editar").val(HistoricoAlteracao);
-    jQuery("#dtPontoCorte-Editar").val(PontoCorte);
-
 
     if (Atual != null) {
       jQuery("#ddlRevisaoAtual-Editar").val(Atual);
@@ -4668,7 +4878,7 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
   }
 
-  protected async abrirModalEditarSubConjuntos(ID, PIE, Title, PATS, DescricaoPATS, Atual, VersaoAtual, CSAtual, Nova, VersaoNova, CSNova, DisposicaoEstoque, DisposicaoEstoqueEscolha, DisposicaoFornecedor, DisposicaoFornecedorEscolha, DisposicaoEmtransito, DisposicaoEmtransitoEscolha, HistoricoAlteracao, PontoCorte) {
+  protected async abrirModalEditarSubConjuntos(ID, PIE, Title, PATS, DescricaoPATS, Atual, VersaoAtual, CSAtual, Nova, VersaoNova, CSNova, DisposicaoEstoque, DisposicaoEstoqueEscolha, DisposicaoFornecedor, DisposicaoFornecedorEscolha, DisposicaoEmtransito, DisposicaoEmtransitoEscolha) {
 
     _idConjunto = ID;
 
@@ -4683,10 +4893,6 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     jQuery("#txtDisposicaoEstoque-Editar-SubConjuntos").val(DisposicaoEstoque);
     jQuery("#txtDisposicaoFornecedor-Editar-SubConjuntos").val(DisposicaoFornecedor);
     jQuery("#txtDisposicaoEmTransito-Editar-SubConjuntos").val(DisposicaoEmtransito);
-    jQuery("#txtHistoricoAlteracoes-Editar-SubConjuntos").val(HistoricoAlteracao);
-    jQuery("#dtPontoCorte-Editar-SubConjuntos").val(PontoCorte);
-
-
 
     if (Atual != null) {
       jQuery("#ddlRevisaoAtual-Editar-SubConjuntos").val(Atual);
@@ -4749,7 +4955,36 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
 
   }
 
+  protected criarTarefa(aprovador, funcao): Promise<number> {
+    return new Promise<number>(resolve => {
+      setTimeout(async () => {
 
+        console.log("Entrou na criação da tarefa");
+        console.log("_numeroOMP", _documentoNumero);
+        console.log("aprovador", aprovador);
+
+        var nroAprovador = parseInt(aprovador);
+
+        resolve(
+
+          await _web.lists
+            .getByTitle("Tarefas")
+            .items.add({
+              Title: `${funcao}`,
+              AssignedToId: nroAprovador,
+              Status: "Em Andamento",
+              NroOMP: `${_documentoNumero}`
+            })
+            .then(async response => {
+              console.log(`criou tarefa pra o aprovador"${aprovador}"!!`);
+            })
+            .catch((error: any) => {
+              console.log(error);
+            })
+        );
+      }, 1500);
+    });
+  }
 
   protected abrirModalCadastrarPontoCorte() {
 
@@ -4781,6 +5016,10 @@ export default class OmpEditarItem extends React.Component<IOmpEditarItemProps, 
     //return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
     return ("0" + date.getDate()).slice(-2) + '/' + ("0" + (date.getMonth() + 1)).slice(-2) + '/' + date.getFullYear();
   };
+
+  protected voltar() {
+    history.back();
+  }
 
 
 

@@ -33,7 +33,8 @@ var _solucaoEncontrada = "";
 var _alteracoes = "";
 var _documentosAlterados = "";
 var _idOMP;
-var _numeroOMP;
+var _documentoNumero;
+
 
 export interface IReactGetItemsState {
 
@@ -119,7 +120,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group col-md">
-                      <label htmlFor="txtTitulo">Título</label><span className="required"> *</span>
+                      <label htmlFor="txtTitulo">Síntese</label><span className="required"> *</span>
                       <input type="text" className="form-control" id="txtTitulo" />
                     </div>
                   </div>
@@ -197,7 +198,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
                       })}
                     </div>
                     <div className="form-group col-md">
-                      <label htmlFor="checkAssitenciaTecnica">Assistência Técnica</label><span className="required"> *</span>
+                      <label htmlFor="checkAssitenciaTecnica">Assistência Técnica</label>
                       {this.state.itemsAssistenciaTecnica.map(function (item, key) {
 
                         return (
@@ -216,7 +217,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="txtDadosProposta">Observação</label><span className="required"> *</span>
+                  <label htmlFor="txtObservacao">Observação</label>
                   <RichText className="editorRichTex" value=""
                     onChange={(text) => this.onTextChangeObservacao(text)} />
                 </div>
@@ -310,7 +311,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group col-md">
-                      <label htmlFor="ddlResponsavelTecnico">Responsável Técnico</label><span className="required"> *</span>
+                      <label htmlFor="ddlResponsavelTecnico">Responsável técnico</label><span className="required"> *</span>
 
                       <select id="ddlResponsavelTecnico" className="form-control">
                         <option value="0" selected>Selecione...</option>
@@ -425,11 +426,11 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
                 </button>
               </div>
               <div className="modal-body">
-                Deseja realmente salvar a OMP?
+                Deseja realmente criar a OMP?
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button id="btnSalvar" type="button" className="btn btn-primary">Criar OMP</button>
+                <button id="btnSalvar" type="button" className="btn btn-primary">Sim</button>
               </div>
             </div>
           </div>
@@ -556,7 +557,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
     var reactHandlerAprovadores = this;
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/Web/SiteGroups/GetByName('OMP - Aprovadores')/users`,
+      url: `${this.props.siteurl}/_api/Web/SiteGroups/GetByName('OMP - Aprovadores')/users?$filter=Title ne 'System Account'`,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -602,6 +603,8 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
 
 
   protected async validar() {
+
+    jQuery("#btnSalvar").prop("disabled", false);
 
     var titulo = $("#txtTitulo").val();
     var tipo = $("#ddlTipo").val();
@@ -665,20 +668,6 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
       return false;
     }
 
-    if (arrAssistenciaTecnica.length == 0) {
-      alert("Escolha pelo menos uma opção para Assistência Técnica!");
-      document.getElementById('headingCriteriosImplantacao').scrollIntoView();
-      return false;
-    }
-
-
-    if ((observacao == "") || (observacao == "<p><br></p>")) {
-      alert("Forneça uma observação!");
-      document.getElementById('headingCriteriosImplantacao').scrollIntoView();
-      return false;
-    }
-
-
     if ((descricaoProblema == "") || (descricaoProblema == "<p><br></p>")) {
       alert("Forneça uma descrição para o problema!");
       document.getElementById('headingProblemaSolucao').scrollIntoView();
@@ -734,6 +723,31 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
       return false;
     }
 
+    var files = (document.querySelector("#input") as HTMLInputElement).files;
+    var size: number = 0;
+
+    if (files.length > 0) {
+
+      console.log("files.length", files.length);
+
+      for (var i = 0; i <= files.length - 1; i++) {
+
+        var fsize = files.item(i).size;
+        size = size + fsize;
+
+        console.log("fsize", fsize);
+
+      }
+
+      if (size > 15000000) {
+        alert("A soma dos arquivos não pode ser maior que 15mega!");
+        size = 0;
+        return false;
+      }
+
+    }
+
+
 
 
     jQuery("#modalConfirmarSalvar").modal({ backdrop: 'static', keyboard: false });
@@ -742,6 +756,8 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
 
   protected async salvar() {
 
+    jQuery("#btnSalvar").prop("disabled", true);
+    
     jQuery("#modalConfirmarSalvar").modal('hide');
     jQuery("#modalCarregando").modal({ backdrop: 'static', keyboard: false });
 
@@ -808,6 +824,8 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
 
             var idControle = resultData.d.results[i].ID;
 
+            _documentoNumero = numeracao;
+
             console.log("numeracao", numeracao);
 
             await _web.lists
@@ -837,8 +855,6 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
 
                 console.log("Gravou OMP!!");
                 _idOMP = response.data.ID;
-                _numeroOMP = response.data.ID;
-
                 await _web.lists
                   .getByTitle("Controle da numeração")
                   .items.getById(idControle).update({
@@ -869,7 +885,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
   }
 
 
-  protected upload() {
+  protected async upload(): Promise<void> {
 
     console.log("Entrou no upload");
 
@@ -882,7 +898,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
 
       console.log("entrou com arquivo");
 
-      _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_idOMP}`).then(async data => {
+      _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_documentoNumero}`).then(async data => {
 
         await _web.lists
           .getByTitle("Ordem de Modificação de Produto")
@@ -898,7 +914,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
 
               //alert(rplNomeArquivo);
               //Upload a file to the SharePoint Library
-              _web.getFolderByServerRelativeUrl(`${_caminho}/Anexos/${_idOMP}`)
+              _web.getFolderByServerRelativeUrl(`${_caminho}/Anexos/${_documentoNumero}`)
                 //.files.add(files[i].name, files[i], true)
                 .files.add(rplNomeArquivo, files[i], true)
                 .then(async data => {
@@ -907,9 +923,11 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
                     var idAnexo = item.ID;
 
                     if (i == files.length) {
+
                       console.log("anexou:" + rplNomeArquivo);
                       $("#modalCarregando").modal('hide');
                       jQuery("#modalSucesso").modal({ backdrop: 'static', keyboard: false })
+
                     }
 
                   })
@@ -934,7 +952,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
 
       console.log("entrou sem arquivo");
 
-      _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_idOMP}`).then(async data => {
+      _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_documentoNumero}`).then(async data => {
 
         await _web.lists
           .getByTitle("Ordem de Modificação de Produto")
@@ -944,7 +962,7 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
           .then(async response => {
 
             $("#modalCarregando").modal('hide');
-            jQuery("#modalSucesso").modal({ backdrop: 'static', keyboard: false });
+            jQuery("#modalSucesso").modal({ backdrop: 'static', keyboard: false })
 
           }).catch(err => {
             console.log("err", err);
@@ -959,10 +977,11 @@ export default class OmpNovoItem extends React.Component<IOmpNovoItemProps, IRea
   }
 
 
+
   protected async fecharSucesso() {
 
     jQuery("#modalSucesso").modal('hide');
-    window.location.href = `OMP-Editar.aspx?DocumentoID=${_idOMP}&DocumentoNumero=${_numeroOMP}`;
+    window.location.href = `OMP-Editar.aspx?DocumentoID=${_idOMP}&DocumentoNumero=${_documentoNumero}`;
   }
 
 

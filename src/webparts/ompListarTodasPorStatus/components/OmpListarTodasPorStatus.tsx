@@ -217,7 +217,7 @@ export default class OmpListarTodasPorStatus extends React.Component<IOmpListarT
 
     return (
 
-      <><p>Resultado: <span className="text-info" id="txtCount"></span> proposta(s) encontrada(s)</p>
+      <><p>Resultado: <span className="text-info" id="txtCount"></span> OMP(s) encontrada(s)</p>
         <div className={styles.container}>
           <BootstrapTable bootstrap4 responsive condensed hover={true} className="gridTodosItens" id="gridTodosItens" keyField='id' data={this.state.itemsList} columns={empTablecolumns} headerClasses="header-class" pagination={paginationFactory(paginationOptions)} filter={filterFactory()} />
         </div></>
